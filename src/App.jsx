@@ -5,13 +5,13 @@ import "./App.css";
 import InputText from "./components/InputText";
 import InputSelect from "./components/InputSelect";
 const data = [
-  { value: "1", label: "Chocolate" },
-  { value: "2", label: "Strawberry" },
-  { value: "3", label: "Vanilla" },
+  { value: 1, label: "Chocolate" },
+  { value: 2, label: "Strawberry" },
+  { value: 3, label: "Vanilla" },
 ];
 function App() {
   const [count, setCount] = useState("");
-  const [valueSelect, setValueSelect] = useState("2");
+  const [valueSelect, setValueSelect] = useState([1, 2]);
   console.log(valueSelect);
   return (
     <>
@@ -30,6 +30,7 @@ function App() {
         />
         <InputSelect
           data={data}
+          isMulti
           value={valueSelect}
           onChange={setValueSelect}
         />

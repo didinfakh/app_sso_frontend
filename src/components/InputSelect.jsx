@@ -1,28 +1,33 @@
 import React, { useEffect, useRef, useState } from "react";
 import Select from "react-select";
 
-const data = [
-  { value: "1", label: "Chocolate" },
-  { value: "2", label: "Strawberry" },
-  { value: "3", label: "Vanilla" },
-];
 function InputSelect(props) {
-  const [valueSelected, setValueSelected] = useState({});
-
+  const [valueSelected, setValueSelected] = useState(props.isMulti ? [] : {});
+  let arrValueSelected = [];
   const firstRender = useRef(true);
   useEffect(() => {
     if (firstRender.current) {
       firstRender.current = false;
       renderValue();
     } else {
-      if (props.value != valueSelected.value) renderValue();
+      renderValue();
     }
-  });
+  }, [props.value]);
 
   const renderValue = () => {
     for (let i = 0; i < props.data.length; i++) {
-      if (props.data[i].value == props.value) {
-        setValueSelected(props.data[i]);
+      if (props.isMulti) {
+        if (Array.isArray(props.value) && props.value.length > 0) {
+          const initialSelections = props.data.filter((option) =>
+            props.value.includes(option.value)
+          );
+          setValueSelected(initialSelections);
+        } else {
+          setValueSelected([]);
+        }
+      } else if (props.data[i].value == props.value) {
+        arrValueSelected = props.data[i];
+        setValueSelected(arrValueSelected);
       }
     }
   };
@@ -32,11 +37,22 @@ function InputSelect(props) {
       <h1>ini adalah select</h1>
       <Select
         value={valueSelected}
-        options={data}
+        options={props.data}
+        isMulti
         onChange={(e) => {
-          props.onChange(e.value);
+          console.log("Selected Options:", e);
+          if (props.isMulti) {
+            let arrVal = [];
+            e.map((index, value) => {
+              arrVal.push(index.value);
+            });
+            props.onChange(arrVal);
+          }
+          // props.onChange(e.value);
         }}
       />
+
+      {/* <Select options={data} isMulti onChange={(e) => console.log(e)} /> */}
     </>
   );
 }
