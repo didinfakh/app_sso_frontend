@@ -32,7 +32,9 @@ function InputText({ disabled = true, className, ...props }) {
         <input
           type={props.type}
           name={props.name}
-          className="h-[40px] col-span-2 border border-gray-300 rounded-md focus:border-gray-400 focus:outline focus:outline-gray-400 p-1"
+          className={`${
+            props.inputCol ? "col-span-3" : ""
+          } h-[40px]  col-span-2 border border-gray-300 rounded-md focus:border-gray-400 focus:outline focus:outline-gray-400 p-1`}
           onChange={(e) => {
             props.onChange(e.target.value);
           }}

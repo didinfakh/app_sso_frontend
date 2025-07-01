@@ -40,7 +40,7 @@ function InputSelect(props) {
       <div className=" w-full grid grid-cols-1 md:grid-cols-3 gap-x-8 md:text-left">
         <div
           className={`${
-            props.inputCol ? "col-span-2 mb-1" : "md:text-right"
+            props.inputCol ? "col-span-3 mb-1" : "md:text-right"
           }  font-semibold text-[#333] `}
         >
           {props.name}

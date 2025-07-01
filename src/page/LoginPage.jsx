@@ -1,6 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import bgLogin from "../assets/bgLogin.png";
+import InputText from "../components/InputText";
 export default function LoginPage() {
+  const [username, setUsername] = useState("");
+  const [email, setemail] = useState("");
+  const [password, setpassword] = useState("");
   return (
     <div className="flex min-h-screen bg-white">
       {/* Left Side */}
@@ -28,53 +32,36 @@ export default function LoginPage() {
           </h1>
 
           <form className="space-y-6">
-            <div>
-              <label
-                htmlFor="fullname"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Full Name
-              </label>
-              <input
-                id="fullname"
-                name="fullname"
-                type="text"
-                placeholder="Jamie Davis"
-                className="block w-full rounded-md border border-gray-300 py-2 px-3 text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Email
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="designer@example.com"
-                className="block w-full rounded-md border border-gray-300 py-2 px-3 text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                placeholder="********"
-                className="block w-full rounded-md border border-gray-300 py-2 px-3 text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              />
-            </div>
+            <InputText
+              onChange={setUsername}
+              value={username}
+              type={"text"}
+              inputCol
+              // inputOnly={true}
+              disabled={false}
+              name="Username"
+              placeholder="Username"
+            />
+            <InputText
+              onChange={setemail}
+              value={email}
+              type={"text"}
+              inputCol
+              // inputOnly={true}
+              disabled={false}
+              name="Email"
+              placeholder="Email"
+            />
+            <InputText
+              onChange={setpassword}
+              value={password}
+              type={"password"}
+              inputCol
+              // inputOnly={true}
+              disabled={false}
+              name="Password"
+              placeholder="Password"
+            />
 
             <div>
               <button
