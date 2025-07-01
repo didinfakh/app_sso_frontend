@@ -1,56 +1,71 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Select from "react-select";
 
 function InputSelect(props) {
-  const [valueSelected, setValueSelected] = useState(props.isMulti ? [] : {});
-  let arrValueSelected = [];
-  const firstRender = useRef(true);
-  useEffect(() => {
-    if (firstRender.current) {
-      firstRender.current = false;
-      renderValue();
-    } else {
-      renderValue();
+  const selectedValue = useMemo(() => {
+    if (props.isMulti) {
+      return Array.isArray(props.value)
+        ? props.data.filter((opt) => props.value.includes(opt.value))
+        : [];
     }
-  }, [props.value]);
+    return props.data.find((opt) => opt.value === props.value) || null;
+  }, [props.data, props.value, props.isMulti]);
 
-  const renderValue = () => {
-    for (let i = 0; i < props.data.length; i++) {
-      if (props.isMulti) {
-        if (Array.isArray(props.value) && props.value.length > 0) {
-          const initialSelections = props.data.filter((option) =>
-            props.value.includes(option.value)
-          );
-          setValueSelected(initialSelections);
-        } else {
-          setValueSelected([]);
-        }
-      } else if (props.data[i].value == props.value) {
-        arrValueSelected = props.data[i];
-        setValueSelected(arrValueSelected);
-      }
+  const handleChange = (selectedOption) => {
+    if (props.isMulti) {
+      const values = selectedOption
+        ? selectedOption.map((opt) => opt.value)
+        : [];
+      props.onChange(values);
+    } else {
+      props.onChange(selectedOption ? selectedOption.value : null);
     }
   };
-
+  if (props.inputOnly == true) {
+    return (
+      <>
+        <Select
+          value={selectedValue}
+          options={props.data}
+          isMulti={props.isMulti}
+          isClearable={props.isClearable}
+          isDisabled={props.disabled}
+          onChange={onchange}
+        />
+      </>
+    );
+  }
   return (
     <>
-      <h1>ini adalah select</h1>
-      <Select
-        value={valueSelected}
-        options={props.data}
-        isMulti
-        onChange={(e) => {
-          console.log("Selected Options:", e);
-          if (props.isMulti) {
-            let arrVal = [];
-            e.map((index, value) => {
-              arrVal.push(index.value);
-            });
-            props.onChange(arrVal);
-          }
+      <div className=" w-full grid grid-cols-1 md:grid-cols-3 gap-x-8 md:text-left">
+        <div
+          className={`${
+            props.inputCol ? "col-span-2 mb-1" : "md:text-right"
+          }  font-semibold text-[#333] `}
+        >
+          {props.name}
+        </div>
+        <Select
+          className="col-span-2"
+          value={selectedValue}
+          options={props.data}
+          isMulti={props.isMulti}
+          isClearable={props.isClearable}
+          isDisabled={props.disabled}
+          onChange={handleChange}
+          // onChange={(e) => {
+          // console.log("Selected Options:", e);
+          // if (props.isMulti) {
+          //   let arrVal = [];
+          //   e.map((index, value) => {
+          //     arrVal.push(index.value);
+          //   });
+          //   props.onChange(arrVal);
+          // }
           // props.onChange(e.value);
-        }}
-      />
+          // }}
+        />
+      </div>
 
       {/* <Select options={data} isMulti onChange={(e) => console.log(e)} /> */}
     </>

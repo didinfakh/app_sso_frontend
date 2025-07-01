@@ -4,6 +4,7 @@ import viteLogo from "/vite.svg";
 import "./App.css";
 import InputText from "./components/InputText";
 import InputSelect from "./components/InputSelect";
+import LoginPage from "./page/LoginPage";
 const data = [
   { value: 1, label: "Chocolate" },
   { value: 2, label: "Strawberry" },
@@ -11,11 +12,10 @@ const data = [
 ];
 function App() {
   const [count, setCount] = useState("");
-  const [valueSelect, setValueSelect] = useState([1, 2]);
-  console.log(valueSelect);
+  const [valueSelect, setValueSelect] = useState(0);
   return (
     <>
-      {count}
+      {/* {count}
       <div className="h-12"></div>
       <div className="w-[50vw] ms-4">
         <InputText
@@ -30,11 +30,15 @@ function App() {
         />
         <InputSelect
           data={data}
+          isClearable
+          name="Buah buahan"
           isMulti
+          // inputCol
           value={valueSelect}
           onChange={setValueSelect}
         />
-      </div>
+      </div> */}
+      <LoginPage />
     </>
   );
 }
