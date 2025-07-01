@@ -10,17 +10,21 @@ export default function LoginPage() {
       </div>
 
       {/* Right Side Form */}
-      <div className="flex flex-col justify-center w-full md:w-1/2 p-8 md:p-20">
-        <div className="max-w-md w-full mx-auto">
-          <div className="text-sm font-bold mb-3 text-gray-900">EDUMENTOR</div>
+      <div className="flex flex-col justify-center w-full md:w-1/2 h-100vh my-10 mx-14">
+        <div className=" w-full ">
+          <div className="text-5xl font-bold  text-gray-900 mb-10">
+            EDUMENTOR
+          </div>
+        </div>
+        <div className="my-auto ">
           <a
             href="#"
-            className="text-indigo-600 text-sm mb-1 inline-block font-semibold hover:underline"
+            className="text-indigo-600 text-xl mb-1 inline-block font-semibold hover:underline"
           >
             Create an Account
           </a>
-          <h1 className="text-3xl font-extrabold mb-8 text-black">
-            WELCOME TO <br /> BYTESPACE
+          <h1 className="text-5xl font-extrabold mb-8 text-black">
+            WELCOME TO AXIOS APP
           </h1>
 
           <form className="space-y-6">
