@@ -38,7 +38,7 @@ function App() {
           onChange={setValueSelect}
         />
       </div> */}
-      <LoginPage />
+      {/* <LoginPage /> */}
     </>
   );
 }

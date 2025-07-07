@@ -1,38 +1,46 @@
 import React, { useState } from "react";
 import bgLogin from "../assets/bgLogin.png";
 import InputText from "../components/InputText";
+import { ApiAuth } from "../services/ApiAuth";
+import { useNavigate } from "react-router";
 export default function LoginPage() {
   const [username, setUsername] = useState("");
   const [email, setemail] = useState("");
   const [password, setpassword] = useState("");
+  const Navigate = useNavigate();
+  const submitLogin = async () => {
+    const data = {
+      email,
+      password,
+    };
+    const response = await ApiAuth.login(data);
+    // console.log(response);
+    if (response) {
+      Navigate("/dashboard");
+    }
+  };
   return (
     <div className="flex min-h-screen bg-white">
-      {/* Left Side */}
       <div className="relative hidden md:flex w-1/2 bg-[#0b0b0b] rounded-3xl overflow-hidden items-center justify-center  m-1">
-        {/* Decorative black 3d ring shapes */}
         <img src={bgLogin} alt="" className="h-[99vh]" />
       </div>
 
-      {/* Right Side Form */}
-      <div className="flex flex-col justify-center w-full md:w-1/2 h-100vh my-10 mx-14">
+      <div className="flex flex-col justify-center w-full md:w-1/2 h-100vh my-10 px-10 md:px-28">
         <div className=" w-full ">
           <div className="text-5xl font-bold  text-gray-900 mb-10">
             EDUMENTOR
           </div>
         </div>
         <div className="my-auto ">
-          <a
-            href="#"
-            className="text-indigo-600 text-xl mb-1 inline-block font-semibold hover:underline"
-          >
+          <p className="text-[#8891FF]   mb-1 inline-block font-semibold ">
             Create an Account
-          </a>
+          </p>
           <h1 className="text-5xl font-extrabold mb-8 text-black">
             WELCOME TO AXIOS APP
           </h1>
 
           <form className="space-y-6">
-            <InputText
+            {/* <InputText
               onChange={setUsername}
               value={username}
               type={"text"}
@@ -41,7 +49,7 @@ export default function LoginPage() {
               disabled={false}
               name="Username"
               placeholder="Username"
-            />
+            /> */}
             <InputText
               onChange={setemail}
               value={email}
@@ -62,22 +70,22 @@ export default function LoginPage() {
               name="Password"
               placeholder="Password"
             />
-
-            <div>
-              <button
-                type="submit"
-                className="w-full rounded-full bg-indigo-600 py-3 text-white font-semibold text-lg hover:bg-indigo-700 transition"
-              >
-                Continue
-              </button>
-            </div>
           </form>
+          <div className="mt-10">
+            <button
+              onClick={submitLogin}
+              // type="submit"
+              className="w-full rounded-2xl bg-[#8891FF] py-3 text-white font-semibold text-lg hover:bg-[#7480ff] transition cursor-pointer"
+            >
+              Continue
+            </button>
+          </div>
 
-          <p className="text-sm text-gray-400 mt-8 text-center">
+          <p className=" text-gray-400 mt-8 text-center">
             Already have an account?{" "}
             <a
               href="#"
-              className="text-indigo-600 hover:underline font-semibold"
+              className="text-[#8891FF]  hover:underline font-semibold"
             >
               Login
             </a>
