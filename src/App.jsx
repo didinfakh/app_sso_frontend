@@ -2,43 +2,24 @@ import { useState } from "react";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
 import "./App.css";
-import InputText from "./components/InputText";
-import InputSelect from "./components/InputSelect";
-import LoginPage from "./page/LoginPage";
-const data = [
-  { value: 1, label: "Chocolate" },
-  { value: 2, label: "Strawberry" },
-  { value: 3, label: "Vanilla" },
-];
 function App() {
-  const [count, setCount] = useState("");
-  const [valueSelect, setValueSelect] = useState(0);
   return (
     <>
-      {/* {count}
-      <div className="h-12"></div>
-      <div className="w-[50vw] ms-4">
-        <InputText
-          onChange={setCount}
-          value={count}
-          type={"date"}
-          // inputCol
-          // inputOnly={true}
-          disabled={false}
-          name="Tanggal lahir"
-          placeholder="Tanggal lahir"
-        />
-        <InputSelect
-          data={data}
-          isClearable
-          name="Buah buahan"
-          isMulti
-          // inputCol
-          value={valueSelect}
-          onChange={setValueSelect}
-        />
-      </div> */}
-      {/* <LoginPage /> */}
+      <div>
+        <a href="https://vitejs.dev" target="_blank">
+          <img src={viteLogo} className="logo" alt="Vite logo" />
+        </a>
+        <a href="https://react.dev" target="_blank">
+          <img src={reactLogo} className="logo react" alt="React logo" />
+        </a>
+      </div>
+      <h1>Vite + React</h1>
+      <div className="card">
+        <button onClick={() => alert("Hello Vite + React!")}>Click me</button>
+      </div>
+      <p className="read-the-docs">
+        Click on the Vite and React logos to learn more
+      </p>
     </>
   );
 }

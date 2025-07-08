@@ -1,6 +1,6 @@
 import axios from "axios";
 import Axios from "axios";
-import { getStorage, setStorage } from "./Utils";
+import { getStorage, removeStorage, setStorage } from "./Utils";
 import { Navigate } from "react-router";
 
 // const router = useRouter();
@@ -20,10 +20,41 @@ const csrfToken = () =>
 
 export const ApiAuth = {
   login: async (props) => {
-    await csrfToken();
-    const response = await apiconfig.post("/login", props);
-    setStorage("isLogedIn", true);
-    setStorage("user", response.data.user);
-    return response.data.user;
+    // apiconfig
+    //   .post("/login", props)
+    //   .then((res) => {
+    //     // console.log(res);
+    //     setStorage("isLogedIn", true);
+    //     setStorage("user", res.data.user);
+    //     return res.data;
+    //   })
+    //   .catch((err) => {
+    //     console.error(err);
+    //     return err;
+    //   });
+    try {
+      await csrfToken();
+      const res = await apiconfig.post("/login", props);
+
+      // Logika sukses
+      setStorage("isLogedIn", true);
+      setStorage("user", res.data.user);
+
+      // Kembalikan data yang berhasil didapat
+      return res.data;
+    } catch (error) {
+      console.log("ini response dari api");
+      console.log(error.response);
+      if (error.response && error.response.data.errors)
+        return error.response.data.errors;
+    }
+  },
+  logout: async (props) => {
+    const response = await apiconfig.post("/logout", props);
+    if (response.status !== 200) {
+      removeStorage("isLogedIn");
+      removeStorage("user");
+      router.push("/login");
+    }
   },
 };
