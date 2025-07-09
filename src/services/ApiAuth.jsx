@@ -45,8 +45,7 @@ export const ApiAuth = {
     } catch (error) {
       console.log("ini response dari api");
       console.log(error.response);
-      if (error.response && error.response.data.errors)
-        return error.response.data.errors;
+      if (error.response && error.response.data) return error.response.data;
     }
   },
   logout: async (props) => {

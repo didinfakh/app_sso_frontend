@@ -8,6 +8,7 @@ export default function LoginPage() {
   const [isLoginPage, setisLoginPage] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [email, setemail] = useState("");
+  const [error, seterror] = useState([]);
   const [password, setpassword] = useState("");
   const [username, setusername] = useState("");
   const [confirmpassword, setconfirmpassword] = useState("");
@@ -21,10 +22,11 @@ export default function LoginPage() {
     };
     const response = await ApiAuth.login(data);
     console.log(response);
-    if (response) {
-      setIsLoading(false);
-      // Navigate("/dashboard");
+    if (response.errors) {
+      seterror(response.errors);
     }
+    // Navigate("/dashboard");
+    setIsLoading(false);
   };
   // useEffect(() => {
   //   if (location.pathname.includes("login")) {
@@ -61,9 +63,10 @@ export default function LoginPage() {
                   value={email}
                   type={"text"}
                   inputCol
+                  error={error}
                   // inputOnly={true}
                   disabled={false}
-                  name="Email"
+                  name="email"
                   placeholder="Email"
                 />
                 <InputText
@@ -71,9 +74,10 @@ export default function LoginPage() {
                   value={password}
                   type={"password"}
                   inputCol
+                  error={error}
                   // inputOnly={true}
                   disabled={false}
-                  name="Password"
+                  name="password"
                   placeholder="Password"
                 />
               </>
