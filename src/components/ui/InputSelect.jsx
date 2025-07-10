@@ -12,6 +12,7 @@ function InputSelect({ error, ...props }) {
   }, [props.data, props.value, props.isMulti]);
 
   const handleChange = (selectedOption) => {
+    error[props.name] = null;
     if (props.isMulti) {
       const values = selectedOption
         ? selectedOption.map((opt) => opt.value)

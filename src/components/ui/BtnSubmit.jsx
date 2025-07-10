@@ -1,6 +1,6 @@
 import React from "react";
 
-function BtnLogin({ onClick, placeholder, ...props }) {
+function BtnSubmit({ onClick, placeholder, ...props }) {
   return (
     <div>
       <button
@@ -18,4 +18,4 @@ function BtnLogin({ onClick, placeholder, ...props }) {
   );
 }
 
-export default BtnLogin;
+export default BtnSubmit;

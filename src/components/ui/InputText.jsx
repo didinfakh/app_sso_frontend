@@ -48,7 +48,7 @@ function InputText({ disabled = true, className, error = null, ...props }) {
             error && error[props.name] ? "border-red-500" : "border-gray-300"
           } rounded-md focus:border-gray-400 focus:outline focus:outline-gray-400 p-1`}
           onChange={(e) => {
-            e.preventDefault();
+            // e.preventDefault();
             error[props.name] = null;
             props.onChange(e.target.value);
           }}

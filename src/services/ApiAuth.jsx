@@ -20,18 +20,6 @@ const csrfToken = () =>
 
 export const ApiAuth = {
   login: async (props) => {
-    // apiconfig
-    //   .post("/login", props)
-    //   .then((res) => {
-    //     // console.log(res);
-    //     setStorage("isLogedIn", true);
-    //     setStorage("user", res.data.user);
-    //     return res.data;
-    //   })
-    //   .catch((err) => {
-    //     console.error(err);
-    //     return err;
-    //   });
     try {
       await csrfToken();
       const res = await apiconfig.post("/login", props);
@@ -54,6 +42,23 @@ export const ApiAuth = {
       removeStorage("isLogedIn");
       removeStorage("user");
       router.push("/login");
+    }
+  },
+  register: async (props) => {
+    try {
+      await csrfToken();
+      const res = await apiconfig.post("/register", props);
+
+      // Logika sukses
+      // setStorage("isLogedIn", true);
+      // setStorage("user", res.data.user);
+
+      // Kembalikan data yang berhasil didapat
+      return res.data;
+    } catch (error) {
+      console.log("ini response dari api");
+      console.log(error.response);
+      if (error.response && error.response.data) return error.response.data;
     }
   },
 };

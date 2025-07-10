@@ -3,7 +3,8 @@ import bgLogin from "../assets/bgLogin.png";
 import InputText from "../components/ui/InputText";
 import { ApiAuth } from "../services/ApiAuth";
 import { useLocation, useNavigate } from "react-router";
-import BtnLogin from "../components/ui/BtnLogin";
+import BtnLogin from "../components/ui/BtnSubmit";
+import { getStorage } from "../services/Utils";
 export default function LoginPage() {
   const [isLoginPage, setisLoginPage] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
@@ -21,26 +22,21 @@ export default function LoginPage() {
       password,
     };
     const response = await ApiAuth.login(data);
-    console.log(response);
     if (response.errors) {
       seterror(response.errors);
     }
-    // Navigate("/dashboard");
     setIsLoading(false);
+    Navigate("/dashboard");
   };
-  // useEffect(() => {
-  //   if (location.pathname.includes("login")) {
-  //     setisLoginPage(true);
-  //   } else {
-  //     setisLoginPage(false);
-  //   }
-  // }, [location.pathname]);
-  return (
-    <div className="flex min-h-screen bg-white">
-      <div className="relative hidden md:flex w-1/2 bg-[#0b0b0b] rounded-3xl overflow-hidden items-center justify-center  m-1">
-        <img src={bgLogin} alt="" className="h-[99vh]" />
-      </div>
 
+  useEffect(() => {
+    if (getStorage("isLogedIn")) {
+      Navigate("/dashboard");
+    }
+  }, [location.pathname]);
+
+  return (
+    <>
       <div className="flex flex-col justify-center w-full md:w-1/2 h-100vh my-10 px-10 md:px-28">
         <div className=" w-full ">
           <div className="text-5xl font-bold  text-gray-900 mb-10">
@@ -49,7 +45,7 @@ export default function LoginPage() {
         </div>
         <div className="my-auto ">
           <p className="text-[#8891FF]   mb-1 inline-block font-semibold ">
-            {isLoginPage ? "Create an Account" : "Login to your account"}
+            Login to your account
           </p>
           <h1 className="text-5xl font-extrabold mb-8 text-black">
             WELCOME TO AXIOS APP
@@ -146,6 +142,6 @@ export default function LoginPage() {
           )}
         </div>
       </div>
-    </div>
+    </>
   );
 }
