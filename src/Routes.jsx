@@ -4,6 +4,7 @@ import Layout from "./components/layout/Layout";
 import Dashboard from "./page/Dashboard";
 import LayoutLogin from "./components/layout/LayoutLogin";
 import RegisterPage from "./page/RegisterPage";
+import VerifyNotice from "./page/VerifyNotice";
 
 export const Router = createBrowserRouter([
   {
@@ -12,6 +13,7 @@ export const Router = createBrowserRouter([
     children: [
       { path: "login", element: <LoginPage /> },
       { path: "register", element: <RegisterPage /> },
+      { path: "verify-notice", element: <VerifyNotice /> },
     ],
   },
   {

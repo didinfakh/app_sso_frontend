@@ -2,7 +2,7 @@ import React, { use, useEffect, useState } from "react";
 import bgLogin from "../assets/bgLogin.png";
 import InputText from "../components/ui/InputText";
 import { ApiAuth } from "../services/ApiAuth";
-import { useLocation, useNavigate } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 import BtnLogin from "../components/ui/BtnSubmit";
 import { getStorage } from "../services/Utils";
 
@@ -11,7 +11,7 @@ export default function RegisterPage() {
   const [email, setemail] = useState("");
   const [error, seterror] = useState([]);
   const [password, setpassword] = useState("");
-  const [username, setusername] = useState("");
+  const [name, setname] = useState("");
   const [confirmpassword, setconfirmpassword] = useState("");
   const Navigate = useNavigate();
   const location = useLocation();
@@ -20,8 +20,8 @@ export default function RegisterPage() {
     const data = {
       email,
       password,
-      username,
-      confirmpassword,
+      name,
+      password_confirmation: confirmpassword,
     };
     const response = await ApiAuth.register(data);
     if (response.errors) {
@@ -31,11 +31,6 @@ export default function RegisterPage() {
     // Navigate("/dashboard");
   };
 
-  useEffect(() => {
-    console.log("test");
-    console.log(email);
-    console.log(username);
-  }, [email]);
   return (
     <>
       <div className="flex flex-col justify-center w-full md:w-1/2 h-100vh my-10 px-10 md:px-28">
@@ -65,15 +60,15 @@ export default function RegisterPage() {
               placeholder="Email"
             />
             <InputText
-              onChange={setusername}
-              value={username}
+              onChange={setname}
+              value={name}
               type={"text"}
               inputCol
               error={error}
               // inputOnly={true}
               disabled={false}
-              name="username"
-              placeholder="Username"
+              name="name"
+              placeholder="Nama"
             />
             <InputText
               onChange={setpassword}
@@ -108,12 +103,13 @@ export default function RegisterPage() {
 
           <p className=" text-gray-400 mt-8 text-center">
             Already have an account?{" "}
-            <a
-              href="#"
+            <Link
+              // href="#"
+              to={"/login"}
               className="text-[#8891FF]  hover:underline font-semibold"
             >
               Login
-            </a>
+            </Link>
           </p>
         </div>
       </div>

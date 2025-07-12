@@ -1,18 +1,23 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import bgLogin from "../assets/bgLogin.png";
 import InputText from "../components/ui/InputText";
 import { ApiAuth } from "../services/ApiAuth";
-import { useLocation, useNavigate } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 import BtnLogin from "../components/ui/BtnSubmit";
 import { getStorage } from "../services/Utils";
+import { UserContext } from "../App";
 export default function LoginPage() {
-  const [isLoginPage, setisLoginPage] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [email, setemail] = useState("");
   const [error, seterror] = useState([]);
   const [password, setpassword] = useState("");
-  const [username, setusername] = useState("");
-  const [confirmpassword, setconfirmpassword] = useState("");
+
+  const { user, setuser } = useContext(UserContext);
+  useEffect(() => {
+    setuser({ email: "test@gmail" });
+    // console.log(user);
+  }, []);
+
   const Navigate = useNavigate();
   const location = useLocation();
   const submitForm = async () => {
@@ -52,65 +57,28 @@ export default function LoginPage() {
           </h1>
 
           <form className="space-y-6">
-            {isLoginPage ? (
-              <>
-                <InputText
-                  onChange={setemail}
-                  value={email}
-                  type={"text"}
-                  inputCol
-                  error={error}
-                  // inputOnly={true}
-                  disabled={false}
-                  name="email"
-                  placeholder="Email"
-                />
-                <InputText
-                  onChange={setpassword}
-                  value={password}
-                  type={"password"}
-                  inputCol
-                  error={error}
-                  // inputOnly={true}
-                  disabled={false}
-                  name="password"
-                  placeholder="Password"
-                />
-              </>
-            ) : (
-              <>
-                <InputText
-                  onChange={setemail}
-                  value={email}
-                  type={"text"}
-                  inputCol
-                  // inputOnly={true}
-                  disabled={false}
-                  name="Email"
-                  placeholder="Email"
-                />
-                <InputText
-                  onChange={setusername}
-                  value={username}
-                  type={"text"}
-                  inputCol
-                  // inputOnly={true}
-                  disabled={false}
-                  name="Username"
-                  placeholder="Username"
-                />
-                <InputText
-                  onChange={setpassword}
-                  value={password}
-                  type={"password"}
-                  inputCol
-                  // inputOnly={true}
-                  disabled={false}
-                  name="Password"
-                  placeholder="Password"
-                />
-              </>
-            )}
+            <InputText
+              onChange={setemail}
+              value={email}
+              type={"text"}
+              inputCol
+              error={error}
+              // inputOnly={true}
+              disabled={false}
+              name="email"
+              placeholder="Email"
+            />
+            <InputText
+              onChange={setpassword}
+              value={password}
+              type={"password"}
+              inputCol
+              error={error}
+              // inputOnly={true}
+              disabled={false}
+              name="password"
+              placeholder="Password"
+            />
           </form>
           <div className="mt-10">
             <BtnLogin
@@ -119,27 +87,16 @@ export default function LoginPage() {
               placeholder={"Continue"}
             />
           </div>
-          {isLoginPage ? (
-            <p className=" text-gray-400 mt-8 text-center">
-              Dont have an account?{" "}
-              <a
-                href="#"
-                className="text-[#8891FF]  hover:underline font-semibold"
-              >
-                Register
-              </a>
-            </p>
-          ) : (
-            <p className=" text-gray-400 mt-8 text-center">
-              Already have an account?{" "}
-              <a
-                href="#"
-                className="text-[#8891FF]  hover:underline font-semibold"
-              >
-                Login
-              </a>
-            </p>
-          )}
+
+          <p className=" text-gray-400 mt-8 text-center">
+            Dont have an account?{" "}
+            <Link
+              to={"/register"}
+              className="text-[#8891FF]  hover:underline font-semibold"
+            >
+              Register
+            </Link>
+          </p>
         </div>
       </div>
     </>

@@ -37,7 +37,7 @@ function InputText({ disabled = true, className, error = null, ...props }) {
             error && error[props.name] ? "text-red-500" : "text-[#333]"
           } font-semibold  `}
         >
-          {props.name}
+          {props.placeholder}
         </div>
         <input
           type={props.type}
