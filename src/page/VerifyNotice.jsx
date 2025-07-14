@@ -6,8 +6,7 @@ import { UserContext } from "../App";
 function VerifyNotice() {
   const [isLoading, setIsLoading] = useState(false);
   const { user, setuser } = useContext(UserContext);
-  console.log("user");
-  console.log(user);
+  console.log("User context in VerifyNotice:", user);
 
   return (
     <div className="flex flex-col justify-center w-full md:w-1/2 h-100vh my-10 px-10 md:px-28">

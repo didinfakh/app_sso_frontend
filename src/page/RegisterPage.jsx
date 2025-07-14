@@ -1,12 +1,13 @@
-import React, { use, useEffect, useState } from "react";
+import React, { use, useContext, useEffect, useState } from "react";
 import bgLogin from "../assets/bgLogin.png";
 import InputText from "../components/ui/InputText";
 import { ApiAuth } from "../services/ApiAuth";
 import { Link, useLocation, useNavigate } from "react-router";
 import BtnLogin from "../components/ui/BtnSubmit";
 import { getStorage } from "../services/Utils";
-
+import { UserContext } from "../App";
 export default function RegisterPage() {
+  const { user, setuser } = useContext(UserContext);
   const [isLoading, setIsLoading] = useState(false);
   const [email, setemail] = useState("");
   const [error, seterror] = useState([]);
@@ -24,11 +25,15 @@ export default function RegisterPage() {
       password_confirmation: confirmpassword,
     };
     const response = await ApiAuth.register(data);
+    setIsLoading(false);
     if (response.errors) {
       seterror(response.errors);
+      return;
     }
-    setIsLoading(false);
-    // Navigate("/dashboard");
+    console.log("ini adalah response");
+    console.log(response);
+    setuser({ email: response.email, name: response.name });
+    Navigate("/verify-notice");
   };
 
   return (
