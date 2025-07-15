@@ -61,4 +61,14 @@ export const ApiAuth = {
       if (error.response && error.response.data) return error.response.data;
     }
   },
+
+  resend_verification: async (props) => {
+    try {
+      const response = await apiconfig.post("/resend-verification");
+      return response.data;
+    } catch (error) {
+      console.error("Error sending verification email:", error);
+      if (error.response && error.response.data) return error.response.data;
+    }
+  },
 };

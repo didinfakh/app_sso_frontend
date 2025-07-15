@@ -30,8 +30,6 @@ export default function RegisterPage() {
       seterror(response.errors);
       return;
     }
-    console.log("ini adalah response");
-    console.log(response);
     setuser({ email: response.email, name: response.name });
     Navigate("/verify-notice");
   };

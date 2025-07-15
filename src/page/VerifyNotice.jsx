@@ -3,10 +3,22 @@ import React, { use, useContext, useEffect, useState } from "react";
 import { Link } from "react-router";
 import BtnLogin from "../components/ui/BtnSubmit";
 import { UserContext } from "../App";
+import { ApiAuth } from "../services/ApiAuth";
 function VerifyNotice() {
   const [isLoading, setIsLoading] = useState(false);
   const { user, setuser } = useContext(UserContext);
-  console.log("User context in VerifyNotice:", user);
+
+  const sendEmail = async () => {
+    setIsLoading(true);
+    // Simulate an API call to resend verification email
+    const response = await ApiAuth.resend_verification();
+    setIsLoading(false);
+    if (response.errors) {
+      alert("Error resending verification email:", response.errors);
+      return;
+    }
+    alert("Verification email sent successfully!");
+  };
 
   return (
     <div className="flex flex-col justify-center w-full md:w-1/2 h-100vh my-10 px-10 md:px-28">
@@ -34,7 +46,7 @@ function VerifyNotice() {
         </div>
         <div className="mt-10">
           <BtnLogin
-            // onClick={submitForm}
+            onClick={sendEmail}
             isLoading={isLoading}
             placeholder={"Resend Verification Email"}
           />
