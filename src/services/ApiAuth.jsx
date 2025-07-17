@@ -4,7 +4,7 @@ import { getStorage, removeStorage, setStorage } from "./Utils";
 import { Navigate } from "react-router";
 
 // const router = useRouter();
-const apiconfig = Axios.create({
+export const apiconfig = Axios.create({
   baseURL: import.meta.env.VITE_API_URL + "/api",
   headers: {
     "Content-Type": "application/json",
