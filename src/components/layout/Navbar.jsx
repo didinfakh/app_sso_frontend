@@ -1,16 +1,16 @@
 import React, { useState, useRef, useEffect } from "react";
+import { getStorage } from "../../services/Utils";
 
 const Navbar = () => {
-  // State untuk menu burger mobile
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  // State untuk dropdown profil
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-
-  // Ref untuk mendeteksi klik di luar dropdown profil
   const profileMenuRef = useRef(null);
+  const [user, setUser] = useState([]);
 
   // Hook untuk menutup dropdown profil jika klik di luar area
   useEffect(() => {
+    const userStorage = getStorage("user");
+    setUser(userStorage);
     const handleClickOutside = (event) => {
       if (
         profileMenuRef.current &&
@@ -79,7 +79,7 @@ const Navbar = () => {
 
         {/* Judul Aplikasi di Tengah */}
         <div className="absolute left-1/2 -translate-x-1/2">
-          <h1 className="text-3xl font-extrabold text-black">AXIOS APP</h1>
+          <h1 className="text-3xl font-extrabold text-black"> APP</h1>
         </div>
 
         {/* Navigasi Kanan */}
@@ -94,10 +94,10 @@ const Navbar = () => {
               className="flex items-center bg-black rounded-full p-1 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               <div className="flex items-center justify-center w-8 h-8 bg-indigo-600 rounded-full text-white font-bold text-sm">
-                FK
+                {user?.initials}
               </div>
               <span className="hidden sm:block ml-2 mr-3 text-white font-medium text-sm">
-                Fakhruddin
+                {user?.name}
               </span>
             </button>
 

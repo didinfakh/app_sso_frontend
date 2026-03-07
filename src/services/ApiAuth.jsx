@@ -25,8 +25,10 @@ export const ApiAuth = {
       const res = await apiconfig.post("/login", props);
 
       // Logika sukses
+      console.log(res.data.permission);
       setStorage("isLogedIn", true);
       setStorage("user", res.data.user);
+      setStorage("permission", res.data.permission);
 
       // Kembalikan data yang berhasil didapat
       return res.data;

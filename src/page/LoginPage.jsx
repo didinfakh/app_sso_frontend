@@ -49,10 +49,10 @@ export default function LoginPage() {
           </div>
         </div>
         <div className="my-auto ">
-          <p className="text-[#8891FF]   mb-1 inline-block font-semibold ">
+          <p className="text-[#8891FF]   mb-1 inline-block font-semibold  ">
             Login to your account
           </p>
-          <h1 className="text-5xl font-extrabold mb-8 text-black">
+          <h1 className="text-5xl font-extrabold mb-8 text-black ">
             WELCOME TO AXIOS APP
           </h1>
 

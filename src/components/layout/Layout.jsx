@@ -3,6 +3,7 @@ import { Outlet, useLocation, useNavigate } from "react-router";
 import Navbar from "./Navbar";
 import useIdleLogout from "../../services/UseIdleLogout";
 import { getStorage } from "../../services/Utils";
+import Sidebar from "./Sidebar";
 
 function Layout() {
   const location = useLocation();
@@ -14,10 +15,12 @@ function Layout() {
     }
   }, [location.pathname]);
   return (
-    <div>
-      <Navbar />
-      <div>layout</div>
-      <Outlet />
+    <div className="flex">
+      <Sidebar />
+      <div className="w-full">
+        <Navbar />
+        <Outlet />
+      </div>
     </div>
   );
 }
