@@ -5,6 +5,7 @@ import Dashboard from "./page/Dashboard";
 import LayoutLogin from "./components/layout/LayoutLogin";
 import RegisterPage from "./page/RegisterPage";
 import VerifyNotice from "./page/VerifyNotice";
+import MenuPage from "./page/MenuPage";
 // import { Navigate } from "react-router-dom";
 
 export const Router = createBrowserRouter([
@@ -21,6 +22,9 @@ export const Router = createBrowserRouter([
   {
     path: "/",
     element: <Layout />,
-    children: [{ path: "dashboard", element: <Dashboard /> }],
+    children: [
+      { path: "dashboard", element: <Dashboard /> },
+      { path: "menu", element: <MenuPage /> }
+    ],
   },
 ]);

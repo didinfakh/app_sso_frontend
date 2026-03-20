@@ -4,15 +4,25 @@ import { getStorage, removeStorage, setStorage } from "./Utils";
 import { Navigate } from "react-router";
 
 // const router = useRouter();
-export const apiconfig = Axios.create({
+export const apiconfig = axios.create({
   baseURL: import.meta.env.VITE_API_URL + "/api",
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
   },
-  withCredentials: true,
-  withXSRFToken: true,
 });
+apiconfig.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers["Authorization"] = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  },
+);
 const csrfToken = () =>
   axios.get(import.meta.env.VITE_API_URL + "/sanctum/csrf-cookie", {
     withCredentials: true,
@@ -29,6 +39,7 @@ export const ApiAuth = {
       setStorage("isLogedIn", true);
       setStorage("user", res.data.user);
       setStorage("permission", res.data.permission);
+      localStorage.setItem("token", res.data.access_token);
 
       // Kembalikan data yang berhasil didapat
       return res.data;
