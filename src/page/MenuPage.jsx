@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import Select from "react-select";
 import { useLocation } from "react-router";
 import { fetchApi } from "../services/ApiService";
 import { hasAccess } from "../services/Utils";
@@ -25,7 +26,7 @@ function MenuPage() {
     url: "",
     icon: "",
     order: 0,
-    parent_id: "",
+    id_menu_parent: "",
   });
 
   const getMenus = async () => {
@@ -50,7 +51,7 @@ function MenuPage() {
         url: menu.url || "",
         icon: menu.icon || "",
         order: menu.order || 0,
-        parent_id: menu.parent_id || "",
+        id_menu_parent: menu.id_menu_parent || "",
       });
     } else {
       setFormData({
@@ -59,7 +60,7 @@ function MenuPage() {
         url: "",
         icon: "",
         order: 0,
-        parent_id: "",
+        id_menu_parent: "",
       });
     }
     setIsModalOpen(true);
@@ -169,7 +170,7 @@ function MenuPage() {
                       <div className="font-medium text-gray-800">
                         {item.name}
                       </div>
-                      {item.parent_id && (
+                      {item.id_menu_parent && (
                         <div className="text-xs text-gray-400 mt-0.5">
                           Sub-menu
                         </div>
@@ -241,8 +242,9 @@ function MenuPage() {
                 {modalMode === "add" ? "Tambah Menu Baru" : "Edit Menu"}
               </h3>
               <button
+                type="button"
                 onClick={closeModal}
-                className={`${modalMode === "add" ? "text-white/80 hover:text-white" : "text-gray-400 hover:text-gray-600"} transition-colors`}
+                className={`${modalMode === "add" ? "text-white/80 hover:text-white" : "text-gray-400 hover:text-gray-600"} transition-colors relative z-20`}
               >
                 <i className="fas fa-times text-lg"></i>
               </button>
@@ -251,9 +253,9 @@ function MenuPage() {
             <form onSubmit={handleSubmit} className="p-6">
               <div className="space-y-4">
                 <div>
-                  <name className="block text-sm font-medium text-gray-700 mb-1">
-                    name Menu <span className="text-red-500">*</span>
-                  </name>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Nama Menu <span className="text-red-500">*</span>
+                  </label>
                   <input
                     type="text"
                     name="name"
@@ -266,12 +268,12 @@ function MenuPage() {
                 </div>
 
                 <div>
-                  <name className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     URL / Route{" "}
                     <span className="text-gray-400 text-xs font-normal">
                       (Opsional)
                     </span>
-                  </name>
+                  </label>
                   <input
                     type="text"
                     name="url"
@@ -283,12 +285,12 @@ function MenuPage() {
                 </div>
 
                 <div>
-                  <name className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Class Icon{" "}
                     <span className="text-gray-400 text-xs font-normal">
                       (Opsional)
                     </span>
-                  </name>
+                  </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                       <i className={formData.icon || "far fa-circle"}></i>
@@ -309,9 +311,9 @@ function MenuPage() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <name className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
                       Order Index
-                    </name>
+                    </label>
                     <input
                       type="number"
                       name="order"
@@ -321,16 +323,65 @@ function MenuPage() {
                     />
                   </div>
                   <div>
-                    <name className="block text-sm font-medium text-gray-700 mb-1">
-                      Parent ID
-                    </name>
-                    <input
-                      type="number"
-                      name="parent_id"
-                      value={formData.parent_id}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all outline-none"
-                      placeholder="Kosongkan jika root"
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Parent Menu
+                    </label>
+                    <Select
+                      options={[
+                        { value: "", label: "-- Tidak Ada (Root) --" },
+                        ...menus.map((m) => {
+                          const menuId = m.id_sys_menu || m.id;
+                          return {
+                            value: menuId,
+                            label: m.name,
+                            isDisabled: formData.id_sys_menu === menuId,
+                          };
+                        }),
+                      ]}
+                      value={
+                        [
+                          { value: "", label: "-- Tidak Ada (Root) --" },
+                          ...menus.map((m) => {
+                            const menuId = m.id_sys_menu || m.id;
+                            return {
+                              value: menuId,
+                              label: m.name,
+                            };
+                          }),
+                        ].find(
+                          (opt) => opt.value == (formData.id_menu_parent || ""),
+                        ) || null
+                      }
+                      onChange={(selectedOption) => {
+                        handleInputChange({
+                          target: {
+                            name: "id_menu_parent",
+                            value: selectedOption ? selectedOption.value : "",
+                          },
+                        });
+                      }}
+                      placeholder="Pilih Parent Menu..."
+                      isClearable
+                      className="text-sm"
+                      styles={{
+                        control: (base, state) => ({
+                          ...base,
+                          borderColor: state.isFocused ? "#a855f7" : "#E5E7EB",
+                          boxShadow: state.isFocused
+                            ? "0 0 0 1px #a855f7"
+                            : "none",
+                          padding: "1px",
+                          minHeight: "42px",
+                          borderRadius: "0.5rem",
+                          "&:hover": {
+                            borderColor: state.isFocused
+                              ? "#a855f7"
+                              : "#D1D5DB",
+                          },
+                        }),
+                        menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                      }}
+                      menuPortalTarget={document.body}
                     />
                   </div>
                 </div>

@@ -50,11 +50,16 @@ export const ApiAuth = {
     }
   },
   logout: async (props) => {
-    const response = await apiconfig.post("/logout", props);
-    if (response.status !== 200) {
+    try {
+      await apiconfig.post("/logout", props);
+    } catch (error) {
+      console.error("Logout API failed", error);
+    } finally {
       removeStorage("isLogedIn");
       removeStorage("user");
-      router.push("/login");
+      removeStorage("permission");
+      localStorage.removeItem("token");
+      window.location.href = "/login";
     }
   },
   register: async (props) => {

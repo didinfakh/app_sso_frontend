@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { getStorage } from "../../services/Utils";
+import { ApiAuth } from "../../services/ApiAuth";
 import { useLocation } from "react-router";
 
 const Navbar = ({ onMenuToggle }) => {
@@ -111,13 +112,13 @@ const Navbar = ({ onMenuToggle }) => {
                 <i className="fas fa-cog w-5 text-center mr-2"></i> Settings
               </a>
               <div className="h-px bg-gray-100 my-1"></div>
-              <a
-                href="#"
-                className="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+              <button
+                onClick={() => ApiAuth.logout()}
+                className="w-full text-left block px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
               >
                 <i className="fas fa-sign-out-alt w-5 text-center mr-2"></i>{" "}
                 Logout
-              </a>
+              </button>
             </div>
           </div>
         </div>

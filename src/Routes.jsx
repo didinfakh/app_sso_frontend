@@ -6,6 +6,7 @@ import LayoutLogin from "./components/layout/LayoutLogin";
 import RegisterPage from "./page/RegisterPage";
 import VerifyNotice from "./page/VerifyNotice";
 import MenuPage from "./page/MenuPage";
+import SysGroupPermissions from "./page/SysGroupPermissions";
 // import { Navigate } from "react-router-dom";
 
 export const Router = createBrowserRouter([
@@ -24,7 +25,8 @@ export const Router = createBrowserRouter([
     element: <Layout />,
     children: [
       { path: "dashboard", element: <Dashboard /> },
-      { path: "menu", element: <MenuPage /> }
+      { path: "menu", element: <MenuPage /> },
+      { path: "sys-group-permissions", element: <SysGroupPermissions /> },
     ],
   },
 ]);

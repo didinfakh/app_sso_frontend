@@ -172,12 +172,13 @@ const Sidebar = ({ isOpen, setIsOpen, isMobileOpen, setIsMobileOpen }) => {
             className={`flex items-center gap-x-3 ${isOpen ? "w-full" : "w-full justify-center"}`}
           >
             <div className="w-8 h-8 rounded-lg bg-[#3a0ca3] text-white flex items-center justify-center font-black text-xl flex-shrink-0 cursor-pointer">
-              <span className="text-xl font-bold italic mr-[2px]">D</span>
+              <span className="text-xl font-bold italic mr-[2px]">K</span>
             </div>
             <h1
               className={`text-[#2b005e] font-bold text-2xl tracking-tight transition-opacity duration-300 whitespace-nowrap ${isMobileOpen || isOpen ? "opacity-100" : "opacity-0 w-0 md:hidden"}`}
             >
-              Devze<span className="font-semibold text-gray-800">Mart</span>
+              KERIO
+              {/* <span className="font-semibold text-gray-800"></span> */}
             </h1>
           </div>
 
