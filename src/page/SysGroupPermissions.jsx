@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from "react";
+import { useLocation } from "react-router";
 import { fetchApi } from "../services/ApiService";
+import { useToast } from "../context/ToastContext";
+import { hasAccess } from "../services/Utils";
 import PermissionTree from "../components/sys-group-permissions/PermissionTree";
 import AddActionModal from "../components/sys-group-permissions/AddActionModal";
+import AccessDenied from "../components/ui/AccessDenied";
 
 function SysGroupPermissions() {
   const [groups, setGroups] = useState([]);
@@ -13,6 +17,15 @@ function SysGroupPermissions() {
   const [isLoadingPermissions, setIsLoadingPermissions] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
+  const location = useLocation();
+  const currentPath = location.pathname;
+
+  // Check permissions
+  const canIndex = hasAccess(currentPath, "index");
+  const canCreate = hasAccess(currentPath, "create");
+  const canUpdate = hasAccess(currentPath, "update");
+  const canDelete = hasAccess(currentPath, "delete");
+
   // States for Add Action Modal
   const [sysPermissions, setSysPermissions] = useState([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -23,6 +36,7 @@ function SysGroupPermissions() {
   const [activeMenuId, setActiveMenuId] = useState(null);
   const [isAddingAction, setIsAddingAction] = useState(false);
   const [isRemovingAction, setIsRemovingAction] = useState(null);
+  const { showToast, showConfirmToast } = useToast();
 
   useEffect(() => {
     fetchGroups();
@@ -107,14 +121,18 @@ function SysGroupPermissions() {
       const payload = {
         permissions: Array.from(checkedIds),
       };
-      await fetchApi.postApi(
+      const response = await fetchApi.postApi(
         `/sys-group-permissions/${selectedGroup.id_sys_group}/sync`,
         payload,
       );
-      alert("Hak akses berhasil disimpan");
+      if (response && response.success) {
+        showToast("Hak akses berhasil disimpan", "success");
+      } else {
+        showToast("Gagal menyimpan hak akses", "error");
+      }
     } catch (error) {
       console.error("Failed to save permissions", error);
-      alert("Gagal menyimpan hak akses");
+      showToast("Terjadi kesalahan koneksi", "error");
     }
     setIsSaving(false);
   };
@@ -152,48 +170,112 @@ function SysGroupPermissions() {
         "/sys-group-permissions/add-action",
         payload,
       );
-      if (response) {
+      if (response && response.success) {
+        showToast("Action berhasil ditambahkan", "success");
         closeAddModal();
-        fetchPermissions(selectedGroup.id_sys_group);
+
+        // Update tree locally
+        const newPermission = response.data;
+        setPermissionsTree((prevTree) => {
+          const updateNodes = (nodes) => {
+            return nodes.map((node) => {
+              if (node.id_sys_menu === activeMenuId) {
+                return {
+                  ...node,
+                  permissions: [...(node.permissions || []), newPermission],
+                };
+              }
+              if (node.children) {
+                return { ...node, children: updateNodes(node.children) };
+              }
+              return node;
+            });
+          };
+          return updateNodes(prevTree);
+        });
+
+        // Auto-check the new action
+        if (newPermission.id_sys_menu_permission) {
+          setCheckedIds((prev) =>
+            new Set(prev).add(newPermission.id_sys_menu_permission),
+          );
+        }
+      } else {
+        showToast("Gagal menambah action baru", "error");
       }
     } catch (error) {
       console.error("Gagal menambah custom action", error);
-      alert("Gagal menambah action baru.");
+      showToast("Terjadi kesalahan koneksi", "error");
     }
     setIsAddingAction(false);
   };
 
   const handleRemoveAction = async (permId, e) => {
     e.stopPropagation();
-    if (!window.confirm("Apakah Anda yakin ingin menghapus action ini?"))
-      return;
+    showConfirmToast(
+      "Apakah Anda yakin ingin menghapus action ini?",
+      async () => {
+        setIsRemovingAction(permId);
+        try {
+          const payload = {
+            id_sys_menu_permission: permId,
+          };
+          const response = await fetchApi.postApi(
+            "/sys-group-permissions/remove-action",
+            payload,
+          );
+          if (response && response.success) {
+            showToast("Action berhasil dihapus", "success");
+            // Update tree locally
+            setPermissionsTree((prevTree) => {
+              const updateNodes = (nodes) => {
+                return nodes.map((node) => {
+                  if (node.permissions) {
+                    const filtered = node.permissions.filter(
+                      (p) => p.id_sys_menu_permission !== permId,
+                    );
+                    if (filtered.length !== node.permissions.length) {
+                      return { ...node, permissions: filtered };
+                    }
+                  }
+                  if (node.children) {
+                    return { ...node, children: updateNodes(node.children) };
+                  }
+                  return node;
+                });
+              };
+              return updateNodes(prevTree);
+            });
 
-    setIsRemovingAction(permId);
-    try {
-      const payload = {
-        id_sys_menu_permission: permId,
-      };
-      const response = await fetchApi.postApi(
-        "/sys-group-permissions/remove-action",
-        payload,
-      );
-      if (response) {
-        fetchPermissions(selectedGroup.id_sys_group);
-      }
-    } catch (error) {
-      console.error("Gagal menghapus action", error);
-      alert("Gagal menghapus action.");
-    }
-    setIsRemovingAction(null);
+            // Remove from checkedIds
+            setCheckedIds((prev) => {
+              const next = new Set(prev);
+              next.delete(permId);
+              return next;
+            });
+          } else {
+            showToast("Gagal menghapus action", "error");
+          }
+        } catch (error) {
+          console.error("Gagal menghapus action", error);
+          showToast("Terjadi kesalahan koneksi", "error");
+        }
+        setIsRemovingAction(null);
+      },
+    );
   };
+
+  if (!canIndex) {
+    return <AccessDenied />;
+  }
 
   return (
     <div className="w-full p-6 bg-gray-50 min-h-screen">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-6">
         {/* Left Panel: Groups */}
-        <div className="w-full md:w-1/3 bg-white rounded-xl shadow-sm border border-gray-100 p-6 self-start h-auto xl:sticky xl:top-6">
-          <h2 className="text-xl font-bold mb-4 text-gray-800 flex items-center gap-2">
-            <i className="fas fa-users-cog text-purple-600"></i> Grup Pengguna
+        <div className="w-full md:w-1/3 bg-white rounded-lg shadow-sm border border-gray-200 p-6 self-start h-auto xl:sticky xl:top-6">
+          <h2 className="text-lg font-semibold mb-4 text-gray-800">
+            Grup Pengguna
           </h2>
           {isLoadingGroups ? (
             <div className="flex justify-center p-8 text-gray-400">
@@ -205,10 +287,10 @@ function SysGroupPermissions() {
                 <button
                   key={group.id_sys_group}
                   onClick={() => handleGroupSelect(group)}
-                  className={`text-left px-4 py-3 rounded-lg font-medium transition-all ${
+                  className={`text-left px-4 py-3 rounded-md font-medium transition-all ${
                     selectedGroup?.id_sys_group === group.id_sys_group
-                      ? "bg-purple-100 text-purple-700 border border-purple-200 shadow-sm"
-                      : "bg-gray-50 text-gray-700 hover:bg-gray-100 border border-transparent hover:border-gray-200"
+                      ? "bg-purple-50 text-purple-700 border border-purple-100"
+                      : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
                   }`}
                 >
                   {group.name}
@@ -224,12 +306,11 @@ function SysGroupPermissions() {
         </div>
 
         {/* Right Panel: Permissions Tree */}
-        <div className="w-full md:w-2/3 bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center mb-6 pb-4 border-b border-gray-100">
+        <div className="w-full md:w-2/3 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center mb-6 pb-4 border-b border-gray-200">
             <div>
-              <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-                <i className="fas fa-shield-alt text-purple-600"></i> Hak Akses
-                Menu
+              <h2 className="text-xl font-semibold text-gray-800">
+                Hak Akses Menu
               </h2>
               {selectedGroup ? (
                 <p className="text-sm text-gray-500 mt-1">
@@ -245,7 +326,7 @@ function SysGroupPermissions() {
               )}
             </div>
 
-            {selectedGroup && (
+            {selectedGroup && canUpdate && (
               <button
                 onClick={handleSave}
                 disabled={isSaving}
@@ -263,10 +344,7 @@ function SysGroupPermissions() {
 
           <div className="rounded-lg">
             {!selectedGroup ? (
-              <div className="py-20 text-center text-gray-400 bg-gray-50 rounded-lg border border-dashed border-gray-200">
-                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm border border-gray-100">
-                  <i className="fas fa-mouse-pointer text-2xl text-gray-300"></i>
-                </div>
+              <div className="py-20 text-center text-gray-400 bg-gray-50 rounded border border-dashed border-gray-200">
                 <p>
                   Silakan pilih grup pengguna di panel sebelah kiri
                   <br />
@@ -279,10 +357,7 @@ function SysGroupPermissions() {
                 <p>Memuat struktur menu dan hak akses...</p>
               </div>
             ) : permissionsTree.length === 0 ? (
-              <div className="py-20 text-center text-gray-400 bg-gray-50 rounded-lg border border-dashed border-gray-200">
-                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm border border-gray-100">
-                  <i className="fas fa-folder-open text-2xl text-gray-300"></i>
-                </div>
+              <div className="py-20 text-center text-gray-400 bg-gray-50 rounded border border-dashed border-gray-200">
                 <p>Tidak ada konfigurasi menu yang ditemukan.</p>
               </div>
             ) : (
@@ -297,6 +372,9 @@ function SysGroupPermissions() {
                   onOpenAddModal={openAddModal}
                   onCheckboxChange={handleCheckboxChange}
                   onRemoveAction={handleRemoveAction}
+                  canCreate={canCreate}
+                  canUpdate={canUpdate}
+                  canDelete={canDelete}
                 />
               </div>
             )}

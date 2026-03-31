@@ -114,7 +114,7 @@ const MenuItem = ({ menu, isOpen }) => {
             className={({ isActive }) =>
               `flex items-center gap-x-3 cursor-pointer px-4 py-2.5 rounded-lg text-sm transition-all duration-200 font-medium ${
                 isActive
-                  ? "bg-[#3a0ca3] text-white shadow-md shadow-purple-500/20"
+                  ? "bg-purple-600 text-white shadow-sm"
                   : "text-gray-600 hover:bg-gray-50 hover:text-[#3a0ca3]"
               } ${!isOpen && "justify-center px-0"}`
             }
@@ -164,21 +164,20 @@ const Sidebar = ({ isOpen, setIsOpen, isMobileOpen, setIsMobileOpen }) => {
       )}
 
       <aside
-        className={`fixed md:relative top-0 left-0 z-50 shrink-0 border-r border-gray-200 bg-white transition-all duration-300 h-full flex flex-col ${isMobileOpen ? "translate-x-0 w-64 shadow-2xl" : "-translate-x-full md:translate-x-0"} ${isOpen ? "md:w-64" : "md:w-20"}`}
+        className={`fixed md:relative top-0 left-0 z-50 shrink-0 border-r border-gray-200 bg-white transition-all duration-300 h-full flex flex-col ${isMobileOpen ? "translate-x-0 w-64 shadow-xl" : "-translate-x-full md:translate-x-0"} ${isOpen ? "md:w-64" : "md:w-20"}`}
       >
         {/* Brand & Collapse Header */}
         <div className="h-16 flex items-center px-4 md:px-5 relative shrink-0">
           <div
             className={`flex items-center gap-x-3 ${isOpen ? "w-full" : "w-full justify-center"}`}
           >
-            <div className="w-8 h-8 rounded-lg bg-[#3a0ca3] text-white flex items-center justify-center font-black text-xl flex-shrink-0 cursor-pointer">
+            <div className="w-8 h-8 rounded-md bg-purple-600 text-white flex items-center justify-center font-black text-xl flex-shrink-0 cursor-pointer">
               <span className="text-xl font-bold italic mr-[2px]">K</span>
             </div>
             <h1
-              className={`text-[#2b005e] font-bold text-2xl tracking-tight transition-opacity duration-300 whitespace-nowrap ${isMobileOpen || isOpen ? "opacity-100" : "opacity-0 w-0 md:hidden"}`}
+              className={`text-gray-900 font-bold text-xl tracking-tight transition-opacity duration-300 whitespace-nowrap ${isMobileOpen || isOpen ? "opacity-100" : "opacity-0 w-0 md:hidden"}`}
             >
-              KERIO
-              {/* <span className="font-semibold text-gray-800"></span> */}
+              PROKER
             </h1>
           </div>
 

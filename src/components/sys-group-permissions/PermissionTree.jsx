@@ -11,6 +11,9 @@ const PermissionTree = ({
   onOpenAddModal,
   onCheckboxChange,
   onRemoveAction,
+  canCreate,
+  canUpdate,
+  canDelete,
 }) => {
   return nodes.map((node) => {
     const isExpanded = expandedNodes.has(node.id_sys_menu);
@@ -30,16 +33,9 @@ const PermissionTree = ({
           style={{ paddingLeft: `${depth * 1.5 + 1}rem` }}
           onClick={() => hasChildren && onToggleNode(node.id_sys_menu)}
         >
-          <div className="flex items-center gap-2">
-            <i
-              className={`fas fa-folder${
-                isExpanded ? "-open" : ""
-              } text-purple-400`}
-            ></i>
-            {node.name}
-          </div>
+          <div className="flex items-center gap-2">{node.name}</div>
           <div className="flex items-center gap-3">
-            {selectedGroup && (
+            {selectedGroup && canCreate && (
               <button
                 onClick={(e) => onOpenAddModal(node.id_sys_menu, e)}
                 title="Tambah Action Baru"
@@ -78,28 +74,31 @@ const PermissionTree = ({
                         onChange={() =>
                           onCheckboxChange(perm.id_sys_menu_permission)
                         }
-                        className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500 cursor-pointer transition-colors"
+                        disabled={!canUpdate}
+                        className={`w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500 transition-colors ${!canUpdate ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
                       />
                       <span className="text-sm font-medium text-gray-700 group-hover:text-purple-700 transition-colors">
                         {perm.code || perm.name}
                       </span>
                     </label>
-                    <button
-                      onClick={(e) =>
-                        onRemoveAction(perm.id_sys_menu_permission, e)
-                      }
-                      className="ml-1 text-red-400 hover:text-red-500 transition-colors bg-red-50 hover:bg-red-100 w-6 h-6 flex items-center justify-center rounded"
-                      disabled={
-                        isRemovingAction === perm.id_sys_menu_permission
-                      }
-                      title="Hapus Action"
-                    >
-                      {isRemovingAction === perm.id_sys_menu_permission ? (
-                        <i className="fas fa-spinner fa-spin text-[10px]"></i>
-                      ) : (
-                        <i className="fas fa-times text-[10px]"></i>
-                      )}
-                    </button>
+                    {canDelete && (
+                      <button
+                        onClick={(e) =>
+                          onRemoveAction(perm.id_sys_menu_permission, e)
+                        }
+                        className="ml-1 text-red-400 hover:text-red-500 transition-colors bg-red-50 hover:bg-red-100 w-6 h-6 flex items-center justify-center rounded"
+                        disabled={
+                          isRemovingAction === perm.id_sys_menu_permission
+                        }
+                        title="Hapus Action"
+                      >
+                        {isRemovingAction === perm.id_sys_menu_permission ? (
+                          <i className="fas fa-spinner fa-spin text-[10px]"></i>
+                        ) : (
+                          <i className="fas fa-times text-[10px]"></i>
+                        )}
+                      </button>
+                    )}
                   </div>
                 ))}
               </div>
@@ -118,6 +117,9 @@ const PermissionTree = ({
                   onOpenAddModal={onOpenAddModal}
                   onCheckboxChange={onCheckboxChange}
                   onRemoveAction={onRemoveAction}
+                  canCreate={canCreate}
+                  canUpdate={canUpdate}
+                  canDelete={canDelete}
                 />
               </div>
             )}

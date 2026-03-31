@@ -1,0 +1,16 @@
+# Access Check Rules
+
+TUJUAN:
+Setiap halaman (menu) harus mengecek apakah user yang sedang login memiliki izin untuk mengakses halaman tersebut dan melakukan aksi tertentu.
+
+DOKUMENTASI LENGKAP: [promt_frontend_2.txt](file:///mnt/hardisk1/manajemen_proker/frontend_manajemen_proker/promt_frontend_2.txt)
+
+ATURAN WAJIB:
+1. Selalu import `hasAccess` dari `src/services/Utils.jsx`.
+2. Selalu import `AccessDenied` dari `src/components/ui/AccessDenied.jsx`.
+3. Di setiap halaman baru, dapatkan `currentPath` menggunakan `useLocation()`.
+4. Cek akses "index" menggunakan `hasAccess(currentPath, "index")`.
+5. Jika `canIndex` bernilai `false`, maka WAJIB me-return komponen `<AccessDenied />`.
+6. Sembunyikan elemen UI (tombol tambah, edit, hapus) jika `hasAccess` untuk aksi tersebut bernilai `false`.
+
+Struktur data permission tersimpan di `localStorage` dengan key "permission" sebagai array of menus (berisi URL, actions, dan children).

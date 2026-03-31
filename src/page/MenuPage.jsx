@@ -3,12 +3,15 @@ import Select from "react-select";
 import { useLocation } from "react-router";
 import { fetchApi } from "../services/ApiService";
 import { hasAccess } from "../services/Utils";
+import { useToast } from "../context/ToastContext";
 
 function MenuPage() {
   const [menus, setMenus] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [expandedIds, setExpandedIds] = useState(new Set());
   const location = useLocation();
   const currentPath = location.pathname;
+  const { showToast, showConfirmToast } = useToast();
 
   // Cek akses permissions
   const canAdd = hasAccess(currentPath, "add");
@@ -31,7 +34,7 @@ function MenuPage() {
 
   const getMenus = async () => {
     setIsLoading(true);
-    const response = await fetchApi.getApi("/sys-menus");
+    const response = await fetchApi.getApi("/sys-menus/tree");
     if (response) {
       setMenus(response.data || []);
     }
@@ -41,6 +44,37 @@ function MenuPage() {
   useEffect(() => {
     getMenus();
   }, []);
+
+  const flattenTree = (nodes, depth = 0, isVisible = true) => {
+    let result = [];
+    nodes.forEach((node) => {
+      if (!isVisible) return;
+      result.push({ ...node, depth });
+      const isExpanded = expandedIds.has(node.id_sys_menu || node.id);
+      if (node.children && node.children.length > 0) {
+        result = [
+          ...result,
+          ...flattenTree(node.children, depth + 1, isExpanded),
+        ];
+      }
+    });
+    return result;
+  };
+
+  const toggleExpand = (id, e) => {
+    if (e) e.stopPropagation();
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const flattenedMenus = flattenTree(menus);
 
   const openModal = (mode, menu = null) => {
     setModalMode(mode);
@@ -77,41 +111,71 @@ function MenuPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (modalMode === "add") {
-      await fetchApi.postApi("/sys-menus", formData);
-    } else {
-      await fetchApi.putApi(`/sys-menus/${formData.id_sys_menu}`, formData);
+    try {
+      let response;
+      if (modalMode === "add") {
+        response = await fetchApi.postApi("/sys-menus", formData);
+      } else {
+        response = await fetchApi.putApi(
+          `/sys-menus/${formData.id_sys_menu}`,
+          formData,
+        );
+      }
+
+      if (response && response.status === "success") {
+        showToast(
+          modalMode === "add"
+            ? "Menu berhasil ditambahkan"
+            : "Menu berhasil diperbarui",
+          "success",
+        );
+        closeModal();
+        getMenus();
+      } else if (response && response.errors) {
+        // Handle validation errors
+        const errorMessages = Object.values(response.errors).flat().join(", ");
+        showToast(errorMessages || "Terjadi kesalahan validasi", "error");
+      } else {
+        showToast("Terjadi kesalahan sistem", "error");
+      }
+    } catch (error) {
+      showToast("Terjadi kesalahan koneksi", "error");
     }
-    closeModal();
-    getMenus();
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("Apakah Anda yakin ingin menghapus menu ini?")) {
-      await fetchApi.deleteApi(`/sys-menus/${id}`);
-      getMenus();
-    }
+    showConfirmToast(
+      "Apakah Anda yakin ingin menghapus menu ini?",
+      async () => {
+        try {
+          const response = await fetchApi.deleteApi(`/sys-menus/${id}`);
+          if (response && response.status === "success") {
+            showToast("Menu berhasil dihapus", "success");
+            getMenus();
+          } else {
+            showToast("Gagal menghapus menu", "error");
+          }
+        } catch (error) {
+          showToast("Terjadi kesalahan koneksi", "error");
+        }
+      },
+    );
   };
 
   return (
     <div className="w-full p-6 bg-gray-50 min-h-screen">
       <div className="max-w-7xl mx-auto bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         {/* Header */}
-        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-white">
+        <div className="p-6 border-b border-gray-200 flex justify-between items-center bg-white">
           <div>
-            <h2 className="text-2xl font-bold flex items-center gap-2 text-gray-800">
-              Menu
-            </h2>
-            {/* <p className="text-sm text-gray-500 mt-1">
-              Kelola data menu sistem Anda di sini
-            </p> */}
+            <h2 className="text-xl font-semibold text-gray-800">Menu</h2>
           </div>
           {canAdd && (
             <button
               onClick={() => openModal("add")}
-              className="cursor-pointer bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-all shadow-md hover:shadow-lg flex items-center gap-2"
+              className="cursor-pointer bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded font-medium transition-all shadow-sm flex items-center gap-2"
             >
-              <i className="fas fa-plus"></i> Tambah Menu
+              <i className="fas fa-plus text-xs"></i> Tambah Menu
             </button>
           )}
         </div>
@@ -150,31 +214,46 @@ function MenuPage() {
                 <tr>
                   <td
                     colSpan="4"
-                    className="px-6 py-8 text-center text-gray-400"
+                    className="px-6 py-10 text-center text-gray-400 text-sm"
                   >
-                    <div className="flex flex-col items-center justify-center">
-                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
-                        <i className="fas fa-folder-open text-gray-300 text-2xl"></i>
-                      </div>
-                      <p>Tidak ada data menu</p>
-                    </div>
+                    Tidak ada data menu
                   </td>
                 </tr>
               ) : (
-                menus.map((item, index) => (
+                flattenedMenus.map((item, index) => (
                   <tr
                     key={item.id_sys_menu || item.id || index}
                     className="hover:bg-gray-50 transition-colors"
                   >
                     <td className="px-6 py-4">
-                      <div className="font-medium text-gray-800">
-                        {item.name}
-                      </div>
-                      {item.id_menu_parent && (
-                        <div className="text-xs text-gray-400 mt-0.5">
-                          Sub-menu
+                      <div
+                        className="flex items-center gap-2"
+                        style={{ paddingLeft: `${item.depth * 1.5}rem` }}
+                      >
+                        {item.children && item.children.length > 0 ? (
+                          <button
+                            onClick={(e) =>
+                              toggleExpand(item.id_sys_menu || item.id, e)
+                            }
+                            className="w-5 h-5 flex items-center justify-center rounded hover:bg-gray-200 text-gray-500 transition-colors cursor-pointer"
+                          >
+                            <i
+                              className={`fas fa-chevron-${expandedIds.has(item.id_sys_menu || item.id) ? "down" : "right"} text-[10px]`}
+                            ></i>
+                          </button>
+                        ) : (
+                          <span className="w-5 flex justify-center">
+                            {item.depth > 0 && (
+                              <span className="text-gray-300">
+                                <i className="fas fa-level-up-alt rotate-90 scale-y-[-1]"></i>
+                              </span>
+                            )}
+                          </span>
+                        )}
+                        <div className="font-medium text-gray-800">
+                          {item.name}
                         </div>
-                      )}
+                      </div>
                     </td>
                     <td className="px-6 py-4 text-gray-600 text-sm">
                       <span className="bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md text-xs font-mono">
@@ -226,25 +305,18 @@ function MenuPage() {
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
-            className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity"
+            className="absolute inset-0 bg-gray-900/40 transition-opacity"
             onClick={closeModal}
           ></div>
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden relative z-10 animate-in fade-in zoom-in duration-200">
-            <div
-              className={`px-6 py-4 border-b flex justify-between items-center ${modalMode === "add" ? "bg-purple-600 text-white" : "bg-white border-gray-100"}`}
-            >
-              <h3
-                className={`text-lg font-bold flex items-center gap-2 ${modalMode === "edit" ? "text-gray-800" : ""}`}
-              >
-                <i
-                  className={`fas fa-${modalMode === "add" ? "plus-circle" : "edit"}`}
-                ></i>
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden relative z-10 animate-in fade-in zoom-in duration-200">
+            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-white">
+              <h3 className="text-lg font-semibold text-gray-800">
                 {modalMode === "add" ? "Tambah Menu Baru" : "Edit Menu"}
               </h3>
               <button
                 type="button"
                 onClick={closeModal}
-                className={`${modalMode === "add" ? "text-white/80 hover:text-white" : "text-gray-400 hover:text-gray-600"} transition-colors relative z-20`}
+                className="text-gray-400 hover:text-gray-600 transition-colors relative z-20"
               >
                 <i className="fas fa-times text-lg"></i>
               </button>
@@ -329,11 +401,11 @@ function MenuPage() {
                     <Select
                       options={[
                         { value: "", label: "-- Tidak Ada (Root) --" },
-                        ...menus.map((m) => {
+                        ...flattenedMenus.map((m) => {
                           const menuId = m.id_sys_menu || m.id;
                           return {
                             value: menuId,
-                            label: m.name,
+                            label: `${"--- ".repeat(m.depth)}${m.name}`,
                             isDisabled: formData.id_sys_menu === menuId,
                           };
                         }),
@@ -341,11 +413,11 @@ function MenuPage() {
                       value={
                         [
                           { value: "", label: "-- Tidak Ada (Root) --" },
-                          ...menus.map((m) => {
+                          ...flattenedMenus.map((m) => {
                             const menuId = m.id_sys_menu || m.id;
                             return {
                               value: menuId,
-                              label: m.name,
+                              label: `${"--- ".repeat(m.depth)}${m.name}`,
                             };
                           }),
                         ].find(

@@ -6,11 +6,13 @@ import { Link, useLocation, useNavigate } from "react-router";
 import BtnLogin from "../components/ui/BtnSubmit";
 import { getStorage } from "../services/Utils";
 import { UserContext } from "../App";
+import { useToast } from "../context/ToastContext";
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [email, setemail] = useState("");
   const [error, seterror] = useState([]);
   const [password, setpassword] = useState("");
+  const { showToast } = useToast();
 
   const { user, setuser } = useContext(UserContext);
   useEffect(() => {
@@ -22,16 +24,27 @@ export default function LoginPage() {
   const location = useLocation();
   const submitForm = async () => {
     setIsLoading(true);
-    const data = {
-      email,
-      password,
-    };
-    const response = await ApiAuth.login(data);
-    if (response.errors) {
-      seterror(response.errors);
+    try {
+      const data = {
+        email,
+        password,
+      };
+      const response = await ApiAuth.login(data);
+      if (response && response.errors) {
+        seterror(response.errors);
+        const errorMessages = Object.values(response.errors).flat().join(", ");
+        showToast(errorMessages || "Login gagal", "error");
+      } else if (response) {
+        showToast("Login berhasil", "success");
+        Navigate("/dashboard");
+      } else {
+        showToast("Terjadi kesalahan sistem", "error");
+      }
+    } catch (error) {
+      showToast("Terjadi kesalahan koneksi", "error");
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
-    Navigate("/dashboard");
   };
 
   useEffect(() => {
@@ -42,19 +55,17 @@ export default function LoginPage() {
 
   return (
     <>
-      <div className="flex flex-col justify-center w-full md:w-1/2 h-100vh my-10 px-10 md:px-28">
-        <div className=" w-full ">
-          <div className="text-5xl font-bold  text-gray-900 mb-10">
-            EDUMENTOR
+      <div className="flex flex-col justify-center w-full md:w-1/2 min-h-screen px-10 md:px-28 py-10">
+        <div className="w-full mb-12">
+          <div className="text-4xl font-bold text-gray-900 tracking-tight">
+            PROKER
           </div>
         </div>
         <div className="my-auto ">
-          <p className="text-[#8891FF]   mb-1 inline-block font-semibold  ">
+          <p className="text-purple-600 mb-1 inline-block font-semibold  ">
             Login to your account
           </p>
-          <h1 className="text-5xl font-extrabold mb-8 text-black ">
-            WELCOME TO AXIOS APP
-          </h1>
+          <h1 className="text-4xl font-bold mb-8 text-black ">WELCOME BACK</h1>
 
           <form className="space-y-6">
             <InputText
@@ -92,7 +103,7 @@ export default function LoginPage() {
             Dont have an account?{" "}
             <Link
               to={"/register"}
-              className="text-[#8891FF]  hover:underline font-semibold"
+              className="text-purple-600 hover:underline font-semibold"
             >
               Register
             </Link>

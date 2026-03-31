@@ -45,7 +45,7 @@ const Navbar = ({ onMenuToggle }) => {
             <i className="fas fa-bars text-xl"></i>
           </button>
           <div className="flex flex-col">
-            <h2 className="text-lg md:text-xl font-bold text-gray-800 tracking-tight">
+            <h2 className="text-xl font-semibold text-gray-800 tracking-tight">
               {pageTitle}
             </h2>
           </div>
@@ -77,10 +77,8 @@ const Navbar = ({ onMenuToggle }) => {
                 </span>
                 <span className="text-xs text-gray-500">Super Admin</span>
               </span>
-              <div className="flex items-center justify-center w-8 h-8 md:w-9 md:h-9 bg-blue-100 rounded-full text-blue-600 font-bold text-[12px] md:text-sm border-2 border-white shadow-sm overflow-hidden shrink-0">
-                {user?.initials || (
-                  <i className="fas fa-user text-gray-400"></i>
-                )}
+              <div className="flex items-center justify-center w-8 h-8 md:w-9 md:h-9 bg-purple-50 rounded text-purple-600 font-bold text-[12px] md:text-sm border border-purple-100 shadow-sm overflow-hidden shrink-0">
+                {user?.initials || <i className="fas fa-user"></i>}
               </div>
               <i className="fas fa-chevron-down text-[10px] text-gray-400 ml-1 hidden md:block"></i>
             </button>
@@ -89,7 +87,7 @@ const Navbar = ({ onMenuToggle }) => {
             <div
               className={`
                 ${isProfileOpen ? "opacity-100 scale-100" : "opacity-0 scale-95 pointer-events-none"}
-                absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-2 origin-top-right transition-all duration-200 z-50
+                absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-md border border-gray-200 py-1 origin-top-right transition-all duration-200 z-50
               `}
             >
               <div className="px-4 py-2 border-b border-gray-100 mb-1 md:hidden">
