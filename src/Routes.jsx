@@ -9,6 +9,10 @@ import MenuPage from "./page/MenuPage";
 import SysGroupPermissions from "./page/SysGroupPermissions";
 // import { Navigate } from "react-router-dom";
 
+import ProgramKerjaPage from "./page/ProgramKerjaPage";
+import ProgramKerjaDetailPage from "./page/ProgramKerjaDetailPage";
+import ProgramSieDetailPage from "./page/ProgramSieDetailPage";
+
 export const Router = createBrowserRouter([
   {
     path: "/",
@@ -27,6 +31,12 @@ export const Router = createBrowserRouter([
       { path: "dashboard", element: <Dashboard /> },
       { path: "menu", element: <MenuPage /> },
       { path: "sys-group-permissions", element: <SysGroupPermissions /> },
+      { path: "program-kerja", element: <ProgramKerjaPage /> },
+      { path: "program-kerja/:id", element: <ProgramKerjaDetailPage /> },
+      {
+        path: "program-kerja/:programId/sie/:sieId",
+        element: <ProgramSieDetailPage />,
+      },
     ],
   },
 ]);

@@ -23,10 +23,41 @@ const getIconByLabel = (label = "") => {
 };
 
 // Komponen item menu — support parent (children) dan leaf (NavLink)
+import { fetchApi } from "../../services/ApiService";
+import { useToast } from "../../context/ToastContext";
+import AddProgramModal from "../program-kerja/AddProgramModal";
+
+// Komponen item menu — support parent (children) dan leaf (NavLink)
 const MenuItem = ({ menu, isOpen }) => {
   const [expanded, setExpanded] = useState(false);
+  const [dynamicChildren, setDynamicChildren] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
   const dropdownRef = React.useRef(null);
   const hasChildren = menu.children && menu.children.length > 0;
+  const isProgramKerja = menu.url === "/program-kerja";
+
+  // Modal State for Add Program Kerja
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (expanded && isProgramKerja && dynamicChildren.length === 0) {
+      fetchDynamicChildren();
+    }
+  }, [expanded]);
+
+  const fetchDynamicChildren = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetchApi.getApi("/program-kerja");
+      if (response && response.data) {
+        setDynamicChildren(response.data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch program kerja:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Tutup popup jika klik di luar elemen saat sidebar minimize dan popup terbuka
   useEffect(() => {
@@ -49,9 +80,49 @@ const MenuItem = ({ menu, isOpen }) => {
   const iconClass = menu.icon || getIconByLabel(menu.label);
   const label = menu.label.charAt(0).toUpperCase() + menu.label.slice(1);
 
+  const renderDynamicItems = (isPopup = false) => {
+    if (isLoading) {
+      return (
+        <li
+          className={`px-4 py-2 text-xs text-gray-400 ${isPopup ? "" : "ml-8"}`}
+        >
+          <i className="fas fa-spinner fa-spin mr-2"></i> Memuat...
+        </li>
+      );
+    }
+    if (dynamicChildren.length === 0) {
+      return (
+        <li
+          className={`px-4 py-2 text-xs text-gray-400 ${isPopup ? "" : "ml-8"}`}
+        >
+          Belum ada program kerja
+        </li>
+      );
+    }
+    return dynamicChildren.map((item) => (
+      <li key={item.id_program}>
+        <NavLink
+          to={`/program-kerja/${item.id_program}`}
+          className={({ isActive }) =>
+            `flex items-center gap-x-3 cursor-pointer px-4 py-2 rounded-lg text-xs transition-all duration-200 ${
+              isActive
+                ? "bg-purple-100 text-purple-700 font-semibold"
+                : "text-gray-500 hover:bg-gray-50 hover:text-purple-600"
+            } ${isPopup ? "" : ""}`
+          }
+        >
+          <span className="w-4 flex justify-center shrink-0">
+            <i className="fas fa-folder-open text-[0.9rem]"></i>
+          </span>
+          <span className="whitespace-nowrap truncate">{item.name}</span>
+        </NavLink>
+      </li>
+    ));
+  };
+
   return (
     <li className="mb-1 relative group" ref={dropdownRef}>
-      {hasChildren ? (
+      {hasChildren || isProgramKerja ? (
         <>
           <button
             onClick={() => setExpanded(!expanded)}
@@ -72,11 +143,33 @@ const MenuItem = ({ menu, isOpen }) => {
               )}
             </div>
             {isOpen && (
-              <span className="text-xs text-gray-400">
-                <i className={`fas fa-chevron-${expanded ? "up" : "down"}`}></i>
-              </span>
+              <div className="flex items-center gap-1.5 translate-x-1">
+                {isProgramKerja && (
+                  <div
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsModalOpen(true);
+                    }}
+                    className="w-6 h-6 flex items-center justify-center rounded-md bg-purple-50 text-purple-600 hover:bg-purple-600 hover:text-white transition-all shadow-sm"
+                    title="Tambah Program Kerja"
+                  >
+                    <i className="fas fa-plus text-[10px]"></i>
+                  </div>
+                )}
+                <span className="text-xs text-gray-400">
+                  <i
+                    className={`fas fa-chevron-${expanded ? "up" : "down"}`}
+                  ></i>
+                </span>
+              </div>
             )}
           </button>
+
+          <AddProgramModal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            onSuccess={fetchDynamicChildren}
+          />
 
           {/* Tooltip for collapsed Sidebar parent */}
           {!isOpen && !expanded && (
@@ -88,9 +181,15 @@ const MenuItem = ({ menu, isOpen }) => {
           {expanded &&
             (isOpen ? (
               <ul className="ml-8 border-l-2 border-gray-100 pl-2 mt-1 space-y-1">
-                {menu.children.map((child) => (
-                  <MenuItem key={child.id_menu} menu={child} isOpen={isOpen} />
-                ))}
+                {hasChildren &&
+                  menu.children.map((child) => (
+                    <MenuItem
+                      key={child.id_menu}
+                      menu={child}
+                      isOpen={isOpen}
+                    />
+                  ))}
+                {isProgramKerja && renderDynamicItems()}
               </ul>
             ) : (
               /* Popup Sub-menu for Minimized Sidebar */
@@ -99,10 +198,16 @@ const MenuItem = ({ menu, isOpen }) => {
                   {label}
                 </div>
                 <ul className="space-y-1 px-2">
-                  {menu.children.map((child) => (
-                    /* Pass isOpen=true to child so it renders its label text inside the popup */
-                    <MenuItem key={child.id_menu} menu={child} isOpen={true} />
-                  ))}
+                  {hasChildren &&
+                    menu.children.map((child) => (
+                      /* Pass isOpen=true to child so it renders its label text inside the popup */
+                      <MenuItem
+                        key={child.id_menu}
+                        menu={child}
+                        isOpen={true}
+                      />
+                    ))}
+                  {isProgramKerja && renderDynamicItems(true)}
                 </ul>
               </div>
             ))}

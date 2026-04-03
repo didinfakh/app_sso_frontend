@@ -1,1 +1,36 @@
-saya ingin anda membuatkan promt untuk merubah design yang ada supaya tidak terkesan hasil generate dari AI, dan juga hilangkan emotion atau icon icon tidak perlu kecuali icon di menu, hasilnya prompt nya masukan ke prompt_frontend_2.txt
+Konteks Proyek:
+Proyek kita adalah frontend berbasis React.js (functional components) yang menggunakan Tailwind CSS. Kita memakai `fetchApi` dari `../services/ApiService` untuk memanggil backend API, dan memiliki hooks message global dengan `useToast()`. 
+Saat ini kita **sudah memiliki** halaman "Program Kerja Detail" (yaitu di file komponen `ProgramKerjaDetailPage.jsx`) yang merender informasi detail tentang proker tersebut, termasuk area daftar "Sie".
+
+Tujuan Fitur Baru:
+Kita ingin merombak tampilan daftar "Sie" di dalam **halaman Program Kerja Detail** tersebut agar menggunakan struktur layout "Local Sidebar" (sidebar khusus bersarang yang hanya ada di dalam halaman itu, BUKAN menempel di global app sidebar luar). 
+
+Alur UX/UI yang Diharapkan (Merujuk pada gambar referensi visual yang ada):
+1. Ketika pengguna berada di halaman Program Kerja (contoh: `/program-kerja/:id_proker`), area di bawah info proker harus dibagi menjadi dua kolom.
+2. **Kolom Kiri (Local Sidebar):** Berisi menu navigasi berupa daftar "Sie" dari proker bersangkutan (misal: Sie Acara, Sie Humas, Sie Perkab).
+3. **Kolom Kanan (Konten Detail):** Berfungsi sebagai tempat untuk menampilkan task/pekerjaan dari "Sie" yang sedang di-klik.
+4. Ketika sebuah "Sie" pada kolom kiri di-klik, maka menu tersebut memiliki indikator visual (seperti background abu-abu gelap atau warna berbeda) yang menandakan "Active State".
+5. **PENTING:** Saat sebuah Sie diklik, tidak perlu membuat komponen task yang rumit dulu. Cukup buatkan satu komponen React sederhana (placeholder) di kolom kanan yang merender: *"Halaman Task - Anda sedang berada di Proker <Nama Proker> dan pada Sie <Nama Sie>."*
+
+Instruksi Koding / Pengerjaan untuk Developer:
+
+1. Rombak Layout di `ProgramKerjaDetailPage.jsx`:
+   - Gunakan sistem Grid Tailwind, misalnya `<div className="grid grid-cols-1 md:grid-cols-4 gap-6">`.
+   - Jadikan `md:col-span-1` (kolom kiri) sebagai "Local Sidebar" yang khusus merender list Sie. Berikan styling seperti background berbeda saat state hover & active.
+   - Jadikan `md:col-span-3` (kolom kanan) sebagai area konten yang me-render detail task berdasarkan Sie yang aktif.
+
+2. State & Pengelolaan Navigasi:
+   - Gunakan data `program` dan `sieList` yang saat ini didapatkan dari URL `id_program` dan di-fetch via `fetchApi.getApi()`.
+   - Buat variabel state baru (misal: `activeSieId`) untuk melacak Sie mana yang sedang dipilih di Local Sidebar.
+   - Buat logic: jika array `sieList` sudah beres di-fetch dan tidak kosong, secara otomatis pilih Sie urutan pertama, atau tampilkan teks *"Silakan pilih Sie"* jika tidak ada Sie yang aktif.
+
+3. Sistem Routing vs Local State (Pilih Salah Satu Pendekatan):
+   - Jika menggunakan **Local State**, saat Sie diklik maka ganti nilai `activeSieId` lalu perbarui tampilan kolom kanan menggunakan Conditional Rendering.
+   - Jika menggunakan **Nested Routing** (dengan react-router-dom), arahkan URL menjadi `/program-kerja/:id/sie/:id_sie` dan buat wrapper komponen untuk merender children view. (Pendekatan bebas, pilih yang paling cocok dan mudah dipahami).
+
+4. Detail Styling Kolom Kiri:
+   - Tata daftar Sie menyerupai sidebar bertumpuk vertikal (Vertical Navigation List). Jangan buat style block horizontal yang memenuhi ruang, tetap simpel, elegan, dan pastikan jelas yang mana yang sedang diklik.
+
+5. Deliverable (Kode yang diserahkan):
+   - Berikan kode perubahan secara lengkap untuk file `ProgramKerjaDetailPage.jsx` (atau kode re-factory yang pecah komponen) yang sudah berisi placeholder text tersebut. 
+   - Harus sangat *copy-paste friendly* dan rapi karena akan langsung dimasukkan ke dalam project. Jangan lupakan pemanggilan API asli dari service yang ada.
