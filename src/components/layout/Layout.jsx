@@ -34,7 +34,7 @@ function Layout() {
       />
       <div className="flex-1 flex flex-col h-screen overflow-hidden relative">
         <Navbar onMenuToggle={() => setIsMobileSidebarOpen(true)} />
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-transparent p-4 md:p-6 lg:p-8">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-transparent p-4">
           <Outlet />
         </main>
       </div>
