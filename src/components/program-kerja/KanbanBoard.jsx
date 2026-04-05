@@ -2,11 +2,20 @@ import React, { useState, useEffect } from "react";
 import { fetchApi } from "../../services/ApiService";
 import { useToast } from "../../context/ToastContext";
 import InputText from "../ui/InputText";
+import TaskCard from "./TaskCard";
+import TaskFormModal from "./TaskFormModal";
 
-function KanbanBoard({ programId, activeSieId }) {
+function KanbanBoard({ programId, activeSieId, program, activeSie }) {
   const { showToast, showConfirmToast } = useToast();
   const [taskStatuses, setTaskStatuses] = useState([]);
+  const [tasks, setTasks] = useState([]);
   const [isTaskStatusLoading, setIsTaskStatusLoading] = useState(false);
+  const [isLoadingTasks, setIsLoadingTasks] = useState(false);
+
+  // Get current user for auth checks
+  const userStr = localStorage.getItem("user");
+  const user = userStr ? JSON.parse(userStr) : null;
+  const currentUserId = user ? String(user.id_user || user.id) : null;
 
   // Modal for Task Status
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
@@ -18,6 +27,12 @@ function KanbanBoard({ programId, activeSieId }) {
     id_sie: activeSieId,
     nama: "",
   });
+
+  // Modal for Tasks
+  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  const [taskModalMode, setTaskModalMode] = useState("add");
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [preSelectedStatus, setPreSelectedStatus] = useState(null);
 
   const getTaskStatuses = async (sieId) => {
     setIsTaskStatusLoading(true);
@@ -31,9 +46,22 @@ function KanbanBoard({ programId, activeSieId }) {
     setIsTaskStatusLoading(false);
   };
 
+  const getTasks = async (sieId) => {
+    setIsLoadingTasks(true);
+    const sid = sieId || activeSieId;
+    const response = await fetchApi.getApi(
+      `/tasks?q[id_program]=${programId}${sid ? `&q[id_sie]=${sid}` : ""}`,
+    );
+    if (response && response.data) {
+      setTasks(response.data);
+    }
+    setIsLoadingTasks(false);
+  };
+
   useEffect(() => {
     if (activeSieId) {
       getTaskStatuses(activeSieId);
+      getTasks(activeSieId);
     }
     setStatusFormData((prev) => ({ ...prev, id_sie: activeSieId }));
   }, [activeSieId, programId]);
@@ -75,7 +103,7 @@ function KanbanBoard({ programId, activeSieId }) {
         );
       }
 
-      if (response && !response.errors) {
+      if (response && response.success) {
         showToast(
           statusModalMode === "add"
             ? "Status berhasil ditambahkan"
@@ -86,6 +114,10 @@ function KanbanBoard({ programId, activeSieId }) {
         getTaskStatuses();
       } else if (response && response.errors) {
         setErrors(response.errors);
+        const errorMessages = Object.values(response.errors).flat().join(", ");
+        showToast(errorMessages || "Terjadi kesalahan validasi", "error");
+      } else {
+        showToast(response?.message || "Terjadi kesalahan sistem", "error");
       }
     } catch (error) {
       showToast("Terjadi kesalahan koneksi", "error");
@@ -98,15 +130,108 @@ function KanbanBoard({ programId, activeSieId }) {
       async () => {
         try {
           const response = await fetchApi.deleteApi(`/task-status/${statusId}`);
-          if (response) {
+          if (response && (response.success || response.status === "success")) {
             showToast("Status berhasil dihapus", "success");
             getTaskStatuses();
+          } else {
+            showToast(response?.message || "Gagal menghapus status", "error");
           }
         } catch (error) {
           showToast("Terjadi kesalahan koneksi", "error");
         }
       },
     );
+  };
+
+  // Task CRUD Handlers
+  const openTaskModal = (mode, item = null, preStatus = null) => {
+    setTaskModalMode(mode);
+    setSelectedTask(item);
+    setPreSelectedStatus(preStatus);
+    setIsTaskModalOpen(true);
+  };
+
+  const closeTaskModal = () => {
+    setIsTaskModalOpen(false);
+    setSelectedTask(null);
+    setPreSelectedStatus(null);
+  };
+
+  const handleTaskSuccess = (message) => {
+    showToast(message, "success");
+    getTasks();
+  };
+
+  // Drag and Drop Handlers
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.currentTarget.classList.add("bg-purple-50/50");
+  };
+
+  const handleDragLeave = (e) => {
+    e.currentTarget.classList.remove("bg-purple-50/50");
+  };
+
+  const handleDrop = async (e, newStatusId) => {
+    e.preventDefault();
+    e.currentTarget.classList.remove("bg-gray-200/50", "border-purple-300");
+
+    const taskIdString = e.dataTransfer.getData("taskId");
+    if (!taskIdString) return;
+
+    const taskId = taskIdString;
+    const task = tasks.find((t) => String(t.id_task || t.id) === taskId);
+
+    if (!task) return;
+
+    // Authorization Check to allow drop
+    const isAssignee = task.assignees?.some(
+      (a) => String(a.id_sys_user || a.id_user || a.id) === currentUserId,
+    );
+
+    const isSieKoordinator =
+      activeSie && String(activeSie.id_koordinator) === currentUserId;
+    const isProgramLeader =
+      program &&
+      String(program.id_user_leader || program.id_auth_user_leader) ===
+        currentUserId;
+
+    if (!isAssignee && !isSieKoordinator && !isProgramLeader) {
+      showToast(
+        "Akses ditolak: Anda tidak memiliki akses untuk memindahkan task ini.",
+        "error",
+      );
+      return;
+    }
+
+    if (String(task.id_task_status) === String(newStatusId)) return;
+
+    try {
+      const currentId = task.id_task || task.id;
+      // Send full updated task data to ensure persistence
+      const updatedData = {
+        ...task,
+        id_task_status: newStatusId,
+        id_program: programId,
+        id_sie: activeSieId,
+        // Map assignees back to id_user array for backend compatibility
+        id_user: task.assignees
+          ? task.assignees.map((u) => u.id_user || u.id)
+          : [],
+      };
+
+      const response = await fetchApi.putApi(
+        `/tasks/${currentId}`,
+        updatedData,
+      );
+      if (response && !response.errors) {
+        getTasks();
+      } else {
+        showToast("Gagal memindahkan tugas", "error");
+      }
+    } catch (error) {
+      showToast("Kesalahan jaringan saat memindahkan tugas", "error");
+    }
   };
 
   if (!activeSieId) {
@@ -128,13 +253,13 @@ function KanbanBoard({ programId, activeSieId }) {
 
   return (
     <div className="space-y-4 pt-2">
-      <div className="flex overflow-x-auto pb-4 gap-6 no-scrollbar">
-        {isTaskStatusLoading ? (
+      <div className="flex overflow-x-auto pb-8 gap-6 no-scrollbar min-h-[calc(100vh-14rem)]">
+        {isTaskStatusLoading || isLoadingTasks ? (
           <div className="flex gap-6 animate-pulse w-full">
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="min-w-[300px] h-96 bg-gray-100 rounded-3xl"
+                className="min-w-[300px] h-[600px] bg-gray-100 rounded-3xl"
               ></div>
             ))}
           </div>
@@ -151,59 +276,107 @@ function KanbanBoard({ programId, activeSieId }) {
           </div>
         ) : (
           <>
-            {taskStatuses.map((status) => (
-              <div
-                key={status.id_task_status}
-                className="min-w-[300px] max-w-[350px] bg-gray-100/60 rounded-3xl p-5 border border-gray-200/50 min-h-[600px] flex flex-col group/col"
-              >
-                <div className="flex justify-between items-center mb-5 px-1">
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-sm font-black text-gray-900 tracking-tight uppercase">
-                      {status.nama}
-                    </h3>
-                    <div className="flex opacity-0 group-hover/col:opacity-100 transition-opacity">
-                      <button
-                        onClick={() => openStatusModal("edit", status)}
-                        className="w-5 h-5 text-[9px] text-amber-600 hover:bg-amber-50 rounded flex items-center justify-center"
-                      >
-                        <i className="fas fa-edit"></i>
-                      </button>
+            {taskStatuses.map((status) => {
+              const statusTasks = tasks.filter(
+                (t) =>
+                  String(t.id_task_status) === String(status.id_task_status),
+              );
+              return (
+                <div
+                  key={status.id_task_status}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={(e) => handleDrop(e, status.id_task_status)}
+                  className="min-w-[300px] max-w-[320px] bg-gray-100/60 rounded-3xl p-4 border border-gray-200/50 flex flex-col group/col transition-colors"
+                >
+                  <div className="flex justify-between items-center mb-4 px-1">
+                    <div className="flex items-center gap-2 overflow-hidden">
+                      <h3 className="text-[11px] font-black text-gray-900 tracking-tight uppercase truncate">
+                        {status.nama}
+                      </h3>
+                      <div className="flex opacity-0 group-hover/col:opacity-100 transition-opacity shrink-0">
+                        <button
+                          onClick={() => openStatusModal("edit", status)}
+                          className="w-5 h-5 text-[9px] text-amber-600 hover:bg-amber-50 rounded flex items-center justify-center"
+                        >
+                          <i className="fas fa-edit"></i>
+                        </button>
+                        <button
+                          onClick={() =>
+                            handleStatusDelete(status.id_task_status)
+                          }
+                          className="w-5 h-5 text-[9px] text-red-600 hover:bg-red-50 rounded flex items-center justify-center"
+                        >
+                          <i className="fas fa-trash"></i>
+                        </button>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
                       <button
                         onClick={() =>
-                          handleStatusDelete(status.id_task_status)
+                          openTaskModal("add", null, status.id_task_status)
                         }
-                        className="w-5 h-5 text-[9px] text-red-600 hover:bg-red-50 rounded flex items-center justify-center"
+                        className="w-5 h-5 bg-white border border-gray-200 rounded text-[10px] text-gray-400 hover:text-purple-600 hover:border-purple-200 transition-all shadow-sm flex items-center justify-center"
                       >
-                        <i className="fas fa-trash"></i>
+                        <i className="fas fa-plus"></i>
                       </button>
+                      <span className="w-5 h-5 bg-gray-200 rounded flex items-center justify-center text-[10px] font-bold text-gray-500">
+                        {statusTasks.length}
+                      </span>
                     </div>
                   </div>
-                  <span className="w-5 h-5 bg-gray-200 rounded-lg flex items-center justify-center text-[10px] font-bold text-gray-500">
-                    0
-                  </span>
-                </div>
 
-                <div className="flex-1 border-2 border-dashed border-gray-200 rounded-2xl flex flex-col items-center justify-center p-8 opacity-40">
-                  <button className="w-8 h-8 bg-white border border-gray-200 rounded-xl flex items-center justify-center text-gray-400 hover:text-purple-600 hover:border-purple-200 transition-all shadow-sm mb-3">
-                    <i className="fas fa-plus text-xs"></i>
-                  </button>
-                  <p className="text-[10px] font-bold text-gray-400">
-                    Tambah Tugas
-                  </p>
+                  <div className="flex-1 space-y-1 overflow-y-auto no-scrollbar pb-4 pr-1">
+                    {statusTasks.length > 0 ? (
+                      statusTasks.map((task) => {
+                        const isAssignee = task.assignees?.some(
+                          (a) =>
+                            String(a.id_sys_user || a.id_user || a.id) ===
+                            currentUserId,
+                        );
+                        const isSieKoordinator =
+                          activeSie &&
+                          String(activeSie.id_koordinator) === currentUserId;
+                        const isProgramLeader =
+                          program &&
+                          String(
+                            program.id_user_leader ||
+                              program.id_auth_user_leader,
+                          ) === currentUserId;
+                        const canDrag =
+                          isAssignee || isSieKoordinator || isProgramLeader;
+
+                        return (
+                          <TaskCard
+                            key={task.id}
+                            task={task}
+                            canDrag={canDrag}
+                            onClick={(t) => openTaskModal("edit", t)}
+                          />
+                        );
+                      })
+                    ) : (
+                      <div className="py-10 border-2 border-dashed border-gray-200 rounded-2xl flex flex-col items-center justify-center p-6 opacity-30">
+                        <p className="text-[9px] font-bold text-gray-400">
+                          Kosong
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
 
             {/* Add Column Button */}
             <button
               onClick={() => openStatusModal("add")}
-              className="min-w-[300px] bg-gray-50/50 rounded-3xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center p-8 hover:bg-white hover:border-purple-300 transition-all group"
+              className="min-w-[300px] max-h-[100px] bg-gray-50/50 rounded-3xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center p-6 hover:bg-white hover:border-purple-300 transition-all group shrink-0"
             >
-              <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 mb-4 group-hover:bg-purple-100 group-hover:text-purple-600 transition-all shadow-sm">
-                <i className="fas fa-plus text-lg"></i>
+              <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 mb-2 group-hover:bg-purple-100 group-hover:text-purple-600 transition-all shadow-sm">
+                <i className="fas fa-plus"></i>
               </div>
-              <span className="text-sm font-bold text-gray-400 group-hover:text-purple-600">
-                Tambah Kolom Baru
+              <span className="text-xs font-bold text-gray-400 group-hover:text-purple-600">
+                Tambah Kolom
               </span>
             </button>
           </>
@@ -267,6 +440,21 @@ function KanbanBoard({ programId, activeSieId }) {
           </div>
         </div>
       )}
+
+      {/* Task Modal */}
+      <TaskFormModal
+        isOpen={isTaskModalOpen}
+        onClose={closeTaskModal}
+        mode={taskModalMode}
+        task={
+          selectedTask ||
+          (preSelectedStatus ? { id_task_status: preSelectedStatus } : null)
+        }
+        programId={programId}
+        activeSieId={activeSieId}
+        taskStatuses={taskStatuses}
+        onSuccess={handleTaskSuccess}
+      />
     </div>
   );
 }

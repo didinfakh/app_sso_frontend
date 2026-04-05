@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import Select from "react-select";
 
-function InputSelect({ error, ...props }) {
+function InputSelect({ error, label, ...props }) {
+  const displayLabel = label || props.name;
   const selectedValue = useMemo(() => {
     if (props.isMulti) {
       return Array.isArray(props.value)
@@ -12,7 +13,7 @@ function InputSelect({ error, ...props }) {
   }, [props.data, props.value, props.isMulti]);
 
   const handleChange = (selectedOption) => {
-    error[props.name] = null;
+    if (error && error[props.name]) error[props.name] = null;
     if (props.isMulti) {
       const values = selectedOption
         ? selectedOption.map((opt) => opt.value)
@@ -34,7 +35,7 @@ function InputSelect({ error, ...props }) {
           isMulti={props.isMulti}
           isClearable={props.isClearable}
           isDisabled={props.disabled}
-          onChange={onchange}
+          onChange={handleChange}
         />
         <small className=" text-red-500 h-1">
           {error && error[props.name] ? error[props.name] : " "}
@@ -50,7 +51,7 @@ function InputSelect({ error, ...props }) {
             error && error[props.name] ? "text-red-500" : "text-[#333]"
           }  font-semibold  `}
         >
-          {props.name}
+          {displayLabel}
         </div>
         <Select
           className={` col-span-2 ${
@@ -62,24 +63,11 @@ function InputSelect({ error, ...props }) {
           isClearable={props.isClearable}
           isDisabled={props.disabled}
           onChange={handleChange}
-          // onChange={(e) => {
-          // console.log("Selected Options:", e);
-          // if (props.isMulti) {
-          //   let arrVal = [];
-          //   e.map((index, value) => {
-          //     arrVal.push(index.value);
-          //   });
-          //   props.onChange(arrVal);
-          // }
-          // props.onChange(e.value);
-          // }}
         />
         <small className="col-span-3 text-red-500 h-1">
           {error && error[props.name] ? error[props.name] : " "}
         </small>
       </div>
-
-      {/* <Select options={data} isMulti onChange={(e) => console.log(e)} /> */}
     </>
   );
 }

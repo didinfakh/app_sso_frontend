@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router";
 import { fetchApi } from "../services/ApiService";
 import { useToast } from "../context/ToastContext";
 import InputText from "../components/ui/InputText";
+import InputSelect from "../components/ui/InputSelect";
 import KanbanBoard from "../components/program-kerja/KanbanBoard";
 
 function ProgramKerjaDetailPage() {
@@ -15,6 +16,10 @@ function ProgramKerjaDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSieLoading, setIsSieLoading] = useState(true);
 
+  // Users for Koordinator
+  const [users, setUsers] = useState([]);
+  const [isLoadingUsers, setIsLoadingUsers] = useState(false);
+
   // Modal for Sie
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState("add");
@@ -22,6 +27,7 @@ function ProgramKerjaDetailPage() {
   const [formData, setFormData] = useState({
     id_sie: null, // Sie PK
     id_program: id, // Proker FK
+    id_koordinator: "", // Koordinator FK
     sie_name: "",
     description: "",
   });
@@ -35,6 +41,25 @@ function ProgramKerjaDetailPage() {
       setProgram(response.data);
     }
     setIsLoading(false);
+  };
+
+  const fetchUsers = async () => {
+    setIsLoadingUsers(true);
+    try {
+      const response = await fetchApi.getApi("/sys-users");
+      if (response && response.data) {
+        setUsers(
+          response.data.map((u) => ({
+            value: u.id_user || u.id,
+            label: u.name || u.username,
+          })),
+        );
+      }
+    } catch (error) {
+      console.error("Failed to fetch users:", error);
+    } finally {
+      setIsLoadingUsers(false);
+    }
   };
 
   const getSieList = async () => {
@@ -62,6 +87,7 @@ function ProgramKerjaDetailPage() {
   useEffect(() => {
     getProgramDetail();
     getSieList();
+    fetchUsers();
   }, [id]);
 
   const openModal = (mode, item = null) => {
@@ -71,6 +97,7 @@ function ProgramKerjaDetailPage() {
       setFormData({
         id_sie: item.id_sie,
         id_program: id,
+        id_koordinator: item.id_koordinator || "",
         sie_name: item.sie_name || "",
         description: item.description || "",
       });
@@ -78,6 +105,7 @@ function ProgramKerjaDetailPage() {
       setFormData({
         id_sie: null,
         id_program: id,
+        id_koordinator: "",
         sie_name: "",
         description: "",
       });
@@ -102,8 +130,8 @@ function ProgramKerjaDetailPage() {
         );
       }
 
-      // Check if response is successful (has id_sie or exists and no errors)
-      if (response && !response.errors) {
+      // Check if response is successful
+      if (response && response.success) {
         showToast(
           modalMode === "add"
             ? "Sie berhasil ditambahkan"
@@ -114,6 +142,11 @@ function ProgramKerjaDetailPage() {
         getSieList();
       } else if (response && response.errors) {
         setErrors(response.errors);
+        // Show error messages in toast
+        const errorMessages = Object.values(response.errors).flat().join(", ");
+        showToast(errorMessages || "Terjadi kesalahan validasi", "error");
+      } else {
+        showToast(response?.message || "Terjadi kesalahan sistem", "error");
       }
     } catch (error) {
       showToast("Terjadi kesalahan koneksi", "error");
@@ -124,9 +157,11 @@ function ProgramKerjaDetailPage() {
     showConfirmToast("Apakah Anda yakin ingin menghapus Sie ini?", async () => {
       try {
         const response = await fetchApi.deleteApi(`/program-sie/${sieId}`);
-        if (response) {
+        if (response && (response.success || response.status === "success")) {
           showToast("Sie berhasil dihapus", "success");
           getSieList();
+        } else {
+          showToast(response?.message || "Gagal menghapus Sie", "error");
         }
       } catch (error) {
         showToast("Terjadi kesalahan koneksi", "error");
@@ -320,7 +355,12 @@ function ProgramKerjaDetailPage() {
             </div>
 
             {/* Kanban Board */}
-            <KanbanBoard programId={id} activeSieId={activeSieId} />
+            <KanbanBoard
+              programId={id}
+              activeSieId={activeSieId}
+              program={program}
+              activeSie={sieList.find((s) => s.id_sie === activeSieId)}
+            />
           </div>
         </div>
       </div>
@@ -356,6 +396,21 @@ function ProgramKerjaDetailPage() {
                   error={errors}
                   inputCol
                   disabled={false}
+                />
+
+                <InputSelect
+                  name="Koordinator"
+                  data={users}
+                  value={formData.id_koordinator}
+                  onChange={(val) =>
+                    setFormData({ ...formData, id_koordinator: val })
+                  }
+                  error={errors}
+                  inputCol
+                  placeholder={
+                    isLoadingUsers ? "Memuat users..." : "Pilih Koordinator..."
+                  }
+                  disabled={isLoadingUsers}
                 />
 
                 <div className="grid grid-cols-1 gap-x-8">

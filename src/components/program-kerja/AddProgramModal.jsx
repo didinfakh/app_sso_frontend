@@ -51,7 +51,7 @@ const AddProgramModal = ({ isOpen, onClose, onSuccess }) => {
     setErrors({});
     try {
       const response = await fetchApi.postApi("/program-kerja", formData);
-      if (response && response.status === "success") {
+      if (response && (response.success || response.status === "success")) {
         showToast("Program Kerja berhasil ditambahkan", "success");
         onSuccess && onSuccess();
         setFormData({

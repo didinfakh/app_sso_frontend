@@ -122,7 +122,7 @@ function MenuPage() {
         );
       }
 
-      if (response && response.status === "success") {
+      if (response && (response.success || response.status === "success")) {
         showToast(
           modalMode === "add"
             ? "Menu berhasil ditambahkan"
@@ -136,7 +136,7 @@ function MenuPage() {
         const errorMessages = Object.values(response.errors).flat().join(", ");
         showToast(errorMessages || "Terjadi kesalahan validasi", "error");
       } else {
-        showToast("Terjadi kesalahan sistem", "error");
+        showToast(response?.message || "Terjadi kesalahan sistem", "error");
       }
     } catch (error) {
       showToast("Terjadi kesalahan koneksi", "error");
@@ -149,11 +149,11 @@ function MenuPage() {
       async () => {
         try {
           const response = await fetchApi.deleteApi(`/sys-menus/${id}`);
-          if (response && response.status === "success") {
+          if (response && (response.success || response.status === "success")) {
             showToast("Menu berhasil dihapus", "success");
             getMenus();
           } else {
-            showToast("Gagal menghapus menu", "error");
+            showToast(response?.message || "Gagal menghapus menu", "error");
           }
         } catch (error) {
           showToast("Terjadi kesalahan koneksi", "error");

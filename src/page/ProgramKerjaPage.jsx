@@ -108,7 +108,7 @@ function ProgramKerjaPage() {
       }
 
       // Check if response is successful
-      if (response && !response.errors) {
+      if (response && (response.success || response.status === "success")) {
         showToast(
           modalMode === "add"
             ? "Program Kerja berhasil ditambahkan"
@@ -135,7 +135,7 @@ function ProgramKerjaPage() {
       async () => {
         try {
           const response = await fetchApi.deleteApi(`/program-kerja/${id}`);
-          if (response && response.status === "success") {
+          if (response && (response.success || response.status === "success")) {
             showToast("Program Kerja berhasil dihapus", "success");
             getProgramKerja();
           } else {

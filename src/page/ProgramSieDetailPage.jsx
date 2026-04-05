@@ -126,7 +126,7 @@ function ProgramSieDetailPage() {
         );
       }
 
-      if (response && response.status === "success") {
+      if (response && (response.success || response.status === "success")) {
         showToast(
           modalMode === "add"
             ? "Anggota berhasil ditambahkan"
@@ -155,7 +155,7 @@ function ProgramSieDetailPage() {
           const response = await fetchApi.deleteApi(
             `/program-sie-member/${memberId}`,
           );
-          if (response && response.status === "success") {
+          if (response && (response.success || response.status === "success")) {
             showToast("Anggota berhasil dihapus", "success");
             getMembers();
           } else {
