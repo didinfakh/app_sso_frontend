@@ -3,7 +3,7 @@ import { fetchApi } from "../../services/ApiService";
 import { useToast } from "../../context/ToastContext";
 import InputText from "../ui/InputText";
 import TaskCard from "./TaskCard";
-import TaskFormModal from "./TaskFormModal";
+import AddTaskModal from "./AddTaskModal";
 
 function KanbanBoard({ programId, activeSieId, program, activeSie }) {
   const { showToast, showConfirmToast } = useToast();
@@ -442,7 +442,7 @@ function KanbanBoard({ programId, activeSieId, program, activeSie }) {
       )}
 
       {/* Task Modal */}
-      <TaskFormModal
+      <AddTaskModal
         isOpen={isTaskModalOpen}
         onClose={closeTaskModal}
         mode={taskModalMode}

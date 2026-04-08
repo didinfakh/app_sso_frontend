@@ -31,7 +31,7 @@ function Dashboard() {
         <div className="mb-8">
           <h1 className="text-xl font-semibold text-gray-800">Dashboard</h1>
           <p className="text-sm text-gray-500 mt-1">
-            Selamat datang kembali di sistem Manajemen Proker.
+            Selamat datang kembali di sistem ViProk.
           </p>
         </div>
 

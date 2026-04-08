@@ -12,6 +12,7 @@ import SysGroupPermissions from "./page/SysGroupPermissions";
 import ProgramKerjaPage from "./page/ProgramKerjaPage";
 import ProgramKerjaDetailPage from "./page/ProgramKerjaDetailPage";
 import ProgramSieDetailPage from "./page/ProgramSieDetailPage";
+import ProfilePage from "./page/ProfilePage";
 
 export const Router = createBrowserRouter([
   {
@@ -37,6 +38,7 @@ export const Router = createBrowserRouter([
         path: "program-kerja/:programId/sie/:sieId",
         element: <ProgramSieDetailPage />,
       },
+      { path: "profile", element: <ProfilePage /> },
     ],
   },
 ]);

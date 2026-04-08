@@ -54,7 +54,7 @@ export default function RegisterPage() {
       <div className="flex flex-col justify-center w-full md:w-1/2 min-h-screen px-10 md:px-28 py-10">
         <div className="w-full mb-12">
           <div className="text-4xl font-bold text-gray-900 tracking-tight">
-            PROKER
+            ViProk
           </div>
         </div>
         <div className="my-auto ">

@@ -43,7 +43,7 @@ function TaskCard({ task, onClick, canDrag = true }) {
 
       {task.description && (
         <p className="text-[10px] text-gray-400 line-clamp-2 mb-3 font-medium">
-          {task.description}
+          {task.description.replace(/<[^>]+>/g, "")}
         </p>
       )}
 

@@ -196,9 +196,9 @@ function ProgramKerjaDetailPage() {
       <div className="w-full space-y-2">
         {/* Integrated Header and Body Section */}
         <div className="flex flex-col lg:flex-row gap-1">
-          {/* Local Sidebar for Sie - Full Height version */}
+          {/* Local Sidebar for Sie - Responsive Version */}
           <div className="w-full lg:w-60 flex-shrink-0">
-            <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-2 sticky top-2 min-h-[calc(100vh-4rem)]">
+            <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-2 sticky top-2 lg:min-h-[calc(100vh-4rem)]">
               <div className="flex justify-between items-center mb-2 px-1">
                 <h2 className="font-black text-gray-900 text-[10px] uppercase tracking-wider">
                   Navigasi Sie
@@ -210,18 +210,18 @@ function ProgramKerjaDetailPage() {
                   <i className="fas fa-plus text-[9px]"></i>
                 </button>
               </div>
-              <div className="space-y-1">
+              <div className="flex lg:flex-col gap-1 overflow-x-auto lg:overflow-x-visible pb-2 lg:pb-0 scrollbar-hide">
                 {isSieLoading ? (
-                  <div className="space-y-3 py-2">
+                  <div className="flex lg:flex-col gap-3 py-2">
                     {[1, 2, 3].map((i) => (
                       <div
                         key={i}
-                        className="h-12 bg-gray-50 rounded-xl animate-pulse"
+                        className="h-10 w-24 lg:w-full bg-gray-50 rounded-xl animate-pulse flex-shrink-0"
                       ></div>
                     ))}
                   </div>
                 ) : sieList.length === 0 ? (
-                  <div className="text-center py-10 bg-gray-50/50 rounded-2xl border border-dashed border-gray-200">
+                  <div className="text-center py-10 bg-gray-50/50 rounded-2xl border border-dashed border-gray-200 w-full">
                     <i className="fas fa-users-cog text-gray-300 mb-2 block text-xl"></i>
                     <p className="text-[10px] text-gray-400 font-medium">
                       Belum ada Sie
@@ -232,7 +232,7 @@ function ProgramKerjaDetailPage() {
                     <div
                       key={sie.id_sie}
                       onClick={() => setActiveSieId(sie.id_sie)}
-                      className={`group flex items-center justify-between p-2 rounded-lg cursor-pointer transition-all border ${
+                      className={`group flex items-center justify-between p-2 rounded-lg cursor-pointer transition-all border shrink-0 lg:shrink-1 ${
                         activeSieId === sie.id_sie
                           ? "bg-purple-50 border-purple-100 shadow-sm"
                           : "hover:bg-gray-50 border-transparent hover:border-gray-100"
@@ -249,7 +249,7 @@ function ProgramKerjaDetailPage() {
                           <i className="fas fa-users-cog text-[10px]"></i>
                         </div>
                         <span
-                          className={`text-[11px] font-bold truncate ${
+                          className={`text-[11px] font-bold truncate whitespace-nowrap ${
                             activeSieId === sie.id_sie
                               ? "text-purple-900"
                               : "text-gray-600 group-hover:text-purple-700"
@@ -259,7 +259,7 @@ function ProgramKerjaDetailPage() {
                         </span>
                       </div>
                       <i
-                        className={`fas fa-chevron-right text-[8px] transition-all ${
+                        className={`fas fa-chevron-right text-[8px] transition-all hidden lg:block ${
                           activeSieId === sie.id_sie
                             ? "text-purple-400 translate-x-1"
                             : "text-gray-300 opacity-0 group-hover:opacity-100"

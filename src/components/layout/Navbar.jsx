@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { getStorage } from "../../services/Utils";
 import { ApiAuth } from "../../services/ApiAuth";
-import { useLocation } from "react-router";
+import { Link, useLocation } from "react-router";
 
 const Navbar = ({ onMenuToggle }) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -96,13 +96,14 @@ const Navbar = ({ onMenuToggle }) => {
                 </p>
                 <p className="text-xs text-gray-500">Super Admin</p>
               </div>
-              <a
-                href="#"
+              <Link
+                to="/profile"
                 className="block px-4 py-2 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition-colors"
+                onClick={() => setIsProfileOpen(false)}
               >
                 <i className="far fa-user w-5 text-center mr-2"></i> Your
                 Profile
-              </a>
+              </Link>
               <a
                 href="#"
                 className="block px-4 py-2 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition-colors"

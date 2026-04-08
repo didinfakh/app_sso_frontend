@@ -1,0 +1,37 @@
+Kerjakan implementasi halaman detail profile untuk project frontend yang terhubung ke backend project ini.
+
+Konteks:
+- Backend project ini memakai Laravel dan sudah memiliki API user di `sys-users`.
+- Kemungkinan update profile bisa memakai endpoint user yang sudah ada, atau endpoint profile khusus jika backend menambahkannya.
+- Field nomor Telegram perlu ikut ditampilkan dan bisa diedit.
+- Untuk frontend, jalankan project dengan Docker service `frontend_proker`.
+- Gunakan pola komponen, routing, styling, dan helper API yang sudah ada di project frontend. Jangan membuat gaya baru yang bertabrakan dengan style existing.
+
+Tujuan halaman:
+- Menampilkan detail profile user yang sedang login.
+- Menyediakan mode edit untuk data profile.
+- Minimal ada field: nama, email, dan nomor Telegram.
+- Jika password memang didukung untuk diubah dari halaman ini, buat terpisah dan jangan memaksa user isi password saat hanya mengubah profile biasa.
+
+Yang perlu dikerjakan:
+1. Cek struktur project frontend dan cari pola halaman form/detail yang sudah ada.
+2. Buat halaman detail profile yang konsisten dengan layout project.
+3. Ambil data user login dari sumber yang paling sesuai:
+   - data user hasil login yang disimpan di frontend, atau
+   - endpoint detail user/profile dari backend.
+4. Buat form edit profile dengan validasi dasar yang jelas.
+5. Hubungkan submit form ke API backend yang tersedia untuk update profile.
+6. Tampilkan loading state, error state, dan success feedback.
+7. Pastikan field nomor Telegram ikut tampil dan bisa disimpan.
+
+Catatan implementasi:
+- Jangan terlalu banyak asumsi. Cocokkan dulu contract request/response backend yang benar.
+- Jika backend memakai `id_user` sebagai identifier, sesuaikan payload dan URL request.
+- Jika endpoint update user yang ada masih meminta password saat update profile biasa, sesuaikan integrasi dengan perubahan backend.
+- Utamakan halaman yang rapi, sederhana, dan mudah dipahami junior developer.
+
+Output yang diharapkan:
+- Halaman detail profile bisa dibuka.
+- Data profile tampil dengan benar.
+- User bisa edit nama, email, dan nomor Telegram lalu simpan perubahan.
+- Sertakan ringkasan file frontend yang dibuat atau diubah.

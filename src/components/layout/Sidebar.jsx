@@ -277,12 +277,12 @@ const Sidebar = ({ isOpen, setIsOpen, isMobileOpen, setIsMobileOpen }) => {
             className={`flex items-center gap-x-3 ${isOpen ? "w-full" : "w-full justify-center"}`}
           >
             <div className="w-8 h-8 rounded-md bg-purple-600 text-white flex items-center justify-center font-black text-xl flex-shrink-0 cursor-pointer">
-              <span className="text-xl font-bold italic mr-[2px]">K</span>
+              <span className="text-xl font-bold italic mr-[2px]">V</span>
             </div>
             <h1
               className={`text-gray-900 font-bold text-xl tracking-tight transition-opacity duration-300 whitespace-nowrap ${isMobileOpen || isOpen ? "opacity-100" : "opacity-0 w-0 md:hidden"}`}
             >
-              PROKER
+              ViProk
             </h1>
           </div>
 
