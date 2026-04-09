@@ -36,8 +36,68 @@ const MenuItem = ({ menu, isOpen }) => {
   const hasChildren = menu.children && menu.children.length > 0;
   const isProgramKerja = menu.url === "/program-kerja";
 
-  // Modal State for Add Program Kerja
+  // Modal and Permission State for Program Kerja
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState("add");
+  const [selectedItem, setSelectedItem] = useState(null);
+  const { showToast, showConfirmToast } = useToast();
+
+  const currentPath = "/program-kerja";
+  const permissions = getStorage("permission");
+
+  const hasActionAccess = (action) => {
+    if (!permissions || !Array.isArray(permissions)) return false;
+
+    const findMenuByUrl = (menus, url) => {
+      for (let menu of menus) {
+        if (menu.url === url) return menu;
+        if (menu.children && menu.children.length > 0) {
+          const found = findMenuByUrl(menu.children, url);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+
+    const currentMenu = findMenuByUrl(permissions, currentPath);
+    if (!currentMenu) return false;
+    return currentMenu.actions && currentMenu.actions.includes(action);
+  };
+
+  const canEdit = hasActionAccess("edit");
+  const canDelete = hasActionAccess("delete");
+
+  const handleEditClick = (e, item) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setSelectedItem(item);
+    setModalMode("edit");
+    setIsModalOpen(true);
+  };
+
+  const handleDeleteProgram = (e, id) => {
+    e.preventDefault();
+    e.stopPropagation();
+    showConfirmToast(
+      "Apakah Anda yakin ingin menghapus program kerja ini?",
+      async () => {
+        try {
+          const response = await fetchApi.deleteApi(`/program-kerja/${id}`);
+          if (response && (response.success || response.status === "success")) {
+            showToast("Program Kerja berhasil dihapus", "success");
+            fetchDynamicChildren();
+          } else {
+            showToast(
+              response?.message || "Gagal menghapus program kerja",
+              "error",
+            );
+          }
+        } catch (error) {
+          showToast("Terjadi kesalahan koneksi", "error");
+        }
+      },
+    );
+  };
 
   useEffect(() => {
     if (expanded && isProgramKerja && dynamicChildren.length === 0) {
@@ -100,21 +160,44 @@ const MenuItem = ({ menu, isOpen }) => {
       );
     }
     return dynamicChildren.map((item) => (
-      <li key={item.id_program}>
+      <li key={item.id_program} className="relative group/item">
         <NavLink
           to={`/program-kerja/${item.id_program}`}
           className={({ isActive }) =>
-            `flex items-center gap-x-3 cursor-pointer px-4 py-2 rounded-lg text-xs transition-all duration-200 ${
+            `flex items-center justify-between gap-x-3 cursor-pointer px-4 py-2 rounded-lg text-xs transition-all duration-200 ${
               isActive
                 ? "bg-purple-100 text-purple-700 font-semibold"
                 : "text-gray-500 hover:bg-gray-50 hover:text-purple-600"
             } ${isPopup ? "" : ""}`
           }
         >
-          <span className="w-4 flex justify-center shrink-0">
-            <i className="fas fa-folder-open text-[0.9rem]"></i>
-          </span>
-          <span className="whitespace-nowrap truncate">{item.name}</span>
+          <div className="flex items-center gap-x-3 min-w-0">
+            <span className="w-4 flex justify-center shrink-0">
+              <i className="fas fa-folder-open text-[0.9rem]"></i>
+            </span>
+            <span className="whitespace-nowrap truncate">{item.name}</span>
+          </div>
+
+          <div className="flex items-center gap-1 opacity-0 group-hover/item:opacity-100 transition-opacity">
+            {canEdit && (
+              <button
+                onClick={(e) => handleEditClick(e, item)}
+                className="w-5 h-5 rounded bg-amber-50 text-amber-600 hover:bg-amber-100 flex items-center justify-center transition-colors"
+                title="Edit"
+              >
+                <i className="fas fa-edit text-[9px]"></i>
+              </button>
+            )}
+            {canDelete && (
+              <button
+                onClick={(e) => handleDeleteProgram(e, item.id_program)}
+                className="w-5 h-5 rounded bg-red-50 text-red-600 hover:bg-red-100 flex items-center justify-center transition-colors"
+                title="Hapus"
+              >
+                <i className="fas fa-trash text-[9px]"></i>
+              </button>
+            )}
+          </div>
         </NavLink>
       </li>
     ));
@@ -148,6 +231,8 @@ const MenuItem = ({ menu, isOpen }) => {
                   <div
                     onClick={(e) => {
                       e.stopPropagation();
+                      setSelectedItem(null);
+                      setModalMode("add");
                       setIsModalOpen(true);
                     }}
                     className="w-6 h-6 flex items-center justify-center rounded-md bg-purple-50 text-purple-600 hover:bg-purple-600 hover:text-white transition-all shadow-sm"
@@ -169,6 +254,8 @@ const MenuItem = ({ menu, isOpen }) => {
             isOpen={isModalOpen}
             onClose={() => setIsModalOpen(false)}
             onSuccess={fetchDynamicChildren}
+            modalMode={modalMode}
+            item={selectedItem}
           />
 
           {/* Tooltip for collapsed Sidebar parent */}

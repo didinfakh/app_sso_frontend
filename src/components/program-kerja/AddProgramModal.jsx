@@ -5,7 +5,13 @@ import { useToast } from "../../context/ToastContext";
 import InputText from "../ui/InputText";
 import InputSelect from "../ui/InputSelect";
 
-const AddProgramModal = ({ isOpen, onClose, onSuccess }) => {
+const AddProgramModal = ({
+  isOpen,
+  onClose,
+  onSuccess,
+  modalMode = "add",
+  item = null,
+}) => {
   const { showToast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
@@ -17,23 +23,43 @@ const AddProgramModal = ({ isOpen, onClose, onSuccess }) => {
     description: "",
     start_date: "",
     end_date: "",
-    id_user_leader: "", // Renamed and changed to empty by default for select
+    id_user_leader: "",
   });
 
   useEffect(() => {
     if (isOpen) {
       fetchUsers();
+      if (modalMode === "edit" && item) {
+        setFormData({
+          id: item.id || item.id_program,
+          name: item.name || "",
+          description: item.description || "",
+          start_date: item.start_date || "",
+          end_date: item.end_date || "",
+          id_user_leader: String(
+            item.id_user_leader || item.id_auth_user_leader || "",
+          ),
+        });
+      } else {
+        setFormData({
+          name: "",
+          description: "",
+          start_date: "",
+          end_date: "",
+          id_user_leader: "",
+        });
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, modalMode, item]);
 
   const fetchUsers = async () => {
     setIsLoadingUsers(true);
     try {
-      const response = await fetchApi.getApi("/sys-users");
+      const response = await fetchApi.getApi("/sys-users?pagesize=1000");
       if (response && response.data) {
         setUsers(
           response.data.map((u) => ({
-            value: u.id_sys_user || u.id,
+            value: String(u.id_sys_user || u.id_user || u.id),
             label: u.name || u.username,
           })),
         );
@@ -50,17 +76,38 @@ const AddProgramModal = ({ isOpen, onClose, onSuccess }) => {
     setIsSubmitting(true);
     setErrors({});
     try {
-      const response = await fetchApi.postApi("/program-kerja", formData);
+      let response;
+      // Ensure we send the data the backend expects.
+      // Based on previous code, we'll try sending id_user_leader.
+      const payload = {
+        ...formData,
+        id_user_leader: formData.id_user_leader,
+      };
+
+      if (modalMode === "add") {
+        response = await fetchApi.postApi("/program-kerja", payload);
+      } else {
+        const id = formData.id || item?.id || item?.id_program;
+        response = await fetchApi.putApi(`/program-kerja/${id}`, payload);
+      }
+
       if (response && (response.success || response.status === "success")) {
-        showToast("Program Kerja berhasil ditambahkan", "success");
+        showToast(
+          modalMode === "add"
+            ? "Program Kerja berhasil ditambahkan"
+            : "Program Kerja berhasil diperbarui",
+          "success",
+        );
         onSuccess && onSuccess();
-        setFormData({
-          name: "",
-          description: "",
-          start_date: "",
-          end_date: "",
-          id_user_leader: "",
-        });
+        if (modalMode === "add") {
+          setFormData({
+            name: "",
+            description: "",
+            start_date: "",
+            end_date: "",
+            id_user_leader: "",
+          });
+        }
         onClose();
       } else if (response && response.errors) {
         setErrors(response.errors);
@@ -88,7 +135,9 @@ const AddProgramModal = ({ isOpen, onClose, onSuccess }) => {
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden relative z-10 animate-in fade-in zoom-in duration-200">
         <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-white">
           <h3 className="text-lg font-semibold text-gray-800">
-            Tambah Program Kerja
+            {modalMode === "add"
+              ? "Tambah Program Kerja"
+              : "Edit Program Kerja"}
           </h3>
           <button
             onClick={onClose}
@@ -115,7 +164,7 @@ const AddProgramModal = ({ isOpen, onClose, onSuccess }) => {
               <div
                 className={`font-semibold text-sm ${errors.description ? "text-red-500" : "text-[#333]"}`}
               >
-                Deskripsi
+                Deskripsiiiii
               </div>
               <div className="col-span-2">
                 <textarea

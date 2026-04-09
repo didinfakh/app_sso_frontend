@@ -13,6 +13,8 @@ import ProgramKerjaPage from "./page/ProgramKerjaPage";
 import ProgramKerjaDetailPage from "./page/ProgramKerjaDetailPage";
 import ProgramSieDetailPage from "./page/ProgramSieDetailPage";
 import ProfilePage from "./page/ProfilePage";
+import SysUserPage from "./page/SysUserPage";
+import SysGroupPage from "./page/SysGroupPage";
 
 export const Router = createBrowserRouter([
   {
@@ -31,7 +33,9 @@ export const Router = createBrowserRouter([
     children: [
       { path: "dashboard", element: <Dashboard /> },
       { path: "menu", element: <MenuPage /> },
+      { path: "sys-group", element: <SysGroupPage /> },
       { path: "sys-group-permissions", element: <SysGroupPermissions /> },
+      { path: "sys-user", element: <SysUserPage /> },
       { path: "program-kerja", element: <ProgramKerjaPage /> },
       { path: "program-kerja/:id", element: <ProgramKerjaDetailPage /> },
       {

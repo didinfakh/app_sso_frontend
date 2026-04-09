@@ -36,6 +36,10 @@ function InputSelect({ error, label, ...props }) {
           isClearable={props.isClearable}
           isDisabled={props.disabled}
           onChange={handleChange}
+          menuPortalTarget={document.body}
+          styles={{
+            menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+          }}
         />
         <small className=" text-red-500 h-1">
           {error && error[props.name] ? error[props.name] : " "}
@@ -63,6 +67,10 @@ function InputSelect({ error, label, ...props }) {
           isClearable={props.isClearable}
           isDisabled={props.disabled}
           onChange={handleChange}
+          menuPortalTarget={document.body}
+          styles={{
+            menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+          }}
         />
         <small className="col-span-3 text-red-500 h-1">
           {error && error[props.name] ? error[props.name] : " "}

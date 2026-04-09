@@ -66,6 +66,7 @@ const AddActionModal = ({
                     onFormChange({ code: "", description: "" });
                   }
                 }}
+                menuPortalTarget={document.body}
                 className="text-sm"
                 styles={{
                   control: (base, state) => ({

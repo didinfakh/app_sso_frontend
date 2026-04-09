@@ -52,7 +52,7 @@ function SysGroupPermissions() {
 
   const fetchGroups = async () => {
     setIsLoadingGroups(true);
-    const response = await fetchApi.getApi("/sys-groups");
+    const response = await fetchApi.getApi("/sys-groups?pagesize=1000");
     if (response) {
       setGroups(response.data || []);
     }

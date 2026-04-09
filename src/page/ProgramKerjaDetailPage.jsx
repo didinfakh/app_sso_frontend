@@ -5,6 +5,7 @@ import { useToast } from "../context/ToastContext";
 import InputText from "../components/ui/InputText";
 import InputSelect from "../components/ui/InputSelect";
 import KanbanBoard from "../components/program-kerja/KanbanBoard";
+import InputSelectMulti from "../components/ui/InputSelectMulti";
 
 function ProgramKerjaDetailPage() {
   const { id } = useParams();
@@ -30,6 +31,7 @@ function ProgramKerjaDetailPage() {
     id_koordinator: "", // Koordinator FK
     sie_name: "",
     description: "",
+    members: [], // Members array
   });
 
   const [activeSieId, setActiveSieId] = useState(null);
@@ -46,7 +48,7 @@ function ProgramKerjaDetailPage() {
   const fetchUsers = async () => {
     setIsLoadingUsers(true);
     try {
-      const response = await fetchApi.getApi("/sys-users");
+      const response = await fetchApi.getApi("/sys-users?pagesize=1000");
       if (response && response.data) {
         setUsers(
           response.data.map((u) => ({
@@ -100,6 +102,11 @@ function ProgramKerjaDetailPage() {
         id_koordinator: item.id_koordinator || "",
         sie_name: item.sie_name || "",
         description: item.description || "",
+        members: item.members
+          ? item.members
+              .filter((m) => m.role !== "Koordinator")
+              .map((m) => m.id_user || m.id)
+          : [],
       });
     } else {
       setFormData({
@@ -108,6 +115,7 @@ function ProgramKerjaDetailPage() {
         id_koordinator: "",
         sie_name: "",
         description: "",
+        members: [],
       });
     }
     setIsModalOpen(true);
@@ -118,15 +126,32 @@ function ProgramKerjaDetailPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      // Format members for backend: combine koordinator and other members
+      const formattedMembers = [
+        ...(formData.id_koordinator
+          ? [{ id_user: formData.id_koordinator, role: "Koordinator" }]
+          : []),
+        ...formData.members
+          .filter(
+            (userId) => String(userId) !== String(formData.id_koordinator),
+          )
+          .map((userId) => ({ id_user: userId, role: "Anggota" })),
+      ];
+
+      const payload = {
+        ...formData,
+        members: formattedMembers,
+      };
+
       let response;
       if (modalMode === "add") {
         // When adding, we shouldn't send id_sie if it's null to avoid DB errors
-        const { id_sie, ...payload } = formData;
-        response = await fetchApi.postApi("/program-sie", payload);
+        const { id_sie, ...restPayload } = payload;
+        response = await fetchApi.postApi("/program-sie", restPayload);
       } else {
         response = await fetchApi.putApi(
           `/program-sie/${formData.id_sie}`,
-          formData,
+          payload,
         );
       }
 
@@ -409,6 +434,20 @@ function ProgramKerjaDetailPage() {
                   inputCol
                   placeholder={
                     isLoadingUsers ? "Memuat users..." : "Pilih Koordinator..."
+                  }
+                  disabled={isLoadingUsers}
+                />
+
+                <InputSelectMulti
+                  label="Anggota Sie"
+                  name="members"
+                  data={users}
+                  value={formData.members}
+                  onChange={(val) => setFormData({ ...formData, members: val })}
+                  error={errors}
+                  inputCol
+                  placeholder={
+                    isLoadingUsers ? "Memuat users..." : "Pilih anggota sie..."
                   }
                   disabled={isLoadingUsers}
                 />
